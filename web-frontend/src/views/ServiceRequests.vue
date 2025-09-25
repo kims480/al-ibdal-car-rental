@@ -222,105 +222,31 @@
         <form @submit.prevent="submitForm" class="space-y-4">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Car *</label>
-              <select 
-                v-model="form.car_id"
-                required
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">Select Car</option>
-                <option v-for="car in cars" :key="car.id" :value="car.id">
-                  {{ car.make }} {{ car.model }} ({{ car.license_plate }})
-                </option>
-              </select>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Customer Name *</label>
+              <input v-model="form.customer_name" type="text" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Issue Type *</label>
-              <select 
-                v-model="form.issue_type"
-                required
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">Select Issue Type</option>
-                <option value="mechanical">Mechanical</option>
-                <option value="electrical">Electrical</option>
-                <option value="body_damage">Body Damage</option>
-                <option value="tire_wheel">Tire/Wheel</option>
-                <option value="interior">Interior</option>
-                <option value="routine_maintenance">Routine Maintenance</option>
-                <option value="other">Other</option>
-              </select>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Customer Phone *</label>
+              <input v-model="form.customer_phone" type="tel" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
           </div>
-
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Description *</label>
-            <textarea
-              v-model="form.description"
-              rows="4"
-              required
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            ></textarea>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Location *</label>
+            <input v-model="form.location" type="text" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Priority *</label>
-              <select 
-                v-model="form.priority"
-                required
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-                <option value="critical">Critical</option>
-              </select>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Rent Start Time *</label>
+              <input v-model="form.rent_start_time" type="date" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
-            <div v-if="isEditing || user?.role === 'admin' || user?.role === 'manager'">
-              <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-              <select 
-                v-model="form.status"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="pending">Pending</option>
-                <option value="assigned">Assigned</option>
-                <option value="in_progress">In Progress</option>
-                <option value="completed">Completed</option>
-                <option value="cancelled">Cancelled</option>
-              </select>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Rent Duration (days) *</label>
+              <input v-model.number="form.rent_duration" type="number" min="1" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" @input="updateEndTime" />
             </div>
-          </div>
-
-          <div v-if="isEditing || user?.role === 'admin' || user?.role === 'manager'">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Assign To</label>
-            <select 
-              v-model="form.assignee_id"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">Unassigned</option>
-              <option v-for="technician in technicians" :key="technician.id" :value="technician.id">
-                {{ technician.name }} ({{ technician.role }})
-              </option>
-            </select>
-          </div>
-
-          <div v-if="isEditing">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Resolution Notes</label>
-            <textarea
-              v-model="form.resolution_notes"
-              rows="3"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            ></textarea>
-          </div>
-
-          <div v-if="isEditing && form.status === 'completed'">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Completion Date</label>
-            <input 
-              v-model="form.completed_at"
-              type="date" 
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Rent End Time *</label>
+              <input v-model="form.rent_end_time" type="date" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" readonly />
+            </div>
           </div>
 
           <div class="flex justify-end space-x-3 pt-4">
@@ -474,14 +400,12 @@ const filters = reactive({
 })
 
 const form = reactive({
-  car_id: '',
-  issue_type: '',
-  description: '',
-  priority: 'medium',
-  status: 'pending',
-  assignee_id: '',
-  resolution_notes: '',
-  completed_at: ''
+  customer_name: '',
+  customer_phone: '',
+  location: '',
+  rent_start_time: '',
+  rent_end_time: '',
+  rent_duration: 1
 })
 
 // Fetch service requests from API
@@ -582,14 +506,23 @@ const closeViewModal = () => {
 }
 
 const resetForm = () => {
-  form.car_id = ''
-  form.issue_type = ''
-  form.description = ''
-  form.priority = 'medium'
-  form.status = 'pending'
-  form.assignee_id = ''
-  form.resolution_notes = ''
-  form.completed_at = ''
+  form.customer_name = ''
+  form.customer_phone = ''
+  form.location = ''
+  form.rent_start_time = ''
+  form.rent_end_time = ''
+  form.rent_duration = 1
+}
+
+// Auto-calculate rent end time
+function updateEndTime() {
+  if (form.rent_start_time && form.rent_duration > 0) {
+    const startDate = new Date(form.rent_start_time)
+    startDate.setDate(startDate.getDate() + Number(form.rent_duration) - 1)
+    form.rent_end_time = startDate.toISOString().split('T')[0]
+  } else {
+    form.rent_end_time = ''
+  }
 }
 
 // Form submission
@@ -597,24 +530,12 @@ const submitForm = async () => {
   submitting.value = true
   try {
     const data = { ...form }
-    
-    // Set requester ID
-    if (!isEditing.value) {
-      data.requester_id = user.value.id
-    }
-
-    // Handle completed_at date
-    if (data.status === 'completed' && !data.completed_at) {
-      data.completed_at = new Date().toISOString().split('T')[0]
-    }
-
     let response
     if (isEditing.value) {
       response = await axios.put(`/service-requests/${selectedRequest.value.id}`, data)
     } else {
       response = await axios.post('/service-requests', data)
     }
-
     if (response.data.success) {
       closeModal()
       fetchServiceRequests()

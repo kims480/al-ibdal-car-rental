@@ -79,12 +79,18 @@ const routes = [
     name: 'Contracts',
     meta: { requiresAuth: true }
   },
-  { 
-    path: '/invoices', 
-    component: Invoices, 
-    name: 'Invoices',
-    meta: { requiresAuth: true }
-  },
+    { 
+      path: '/invoices', 
+      component: Invoices, 
+      name: 'Invoices',
+      meta: { requiresAuth: true }
+    },
+    { 
+      path: '/customers/add', 
+      component: () => import('./views/AddCustomer.vue'), 
+      name: 'AddCustomer', 
+      meta: { requiresAuth: true } 
+    },
   // Partner routes
   { 
     path: '/partner-dashboard', 

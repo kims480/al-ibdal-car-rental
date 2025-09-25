@@ -2,16 +2,16 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\API\AuthController;
-use App\Http\Controllers\API\BranchController;
-use App\Http\Controllers\API\CarController;
-use App\Http\Controllers\API\ServiceRequestController;
-use App\Http\Controllers\API\RentalController;
-use App\Http\Controllers\API\InvoiceController;
-use App\Http\Controllers\API\ContractController;
-use App\Http\Controllers\API\UserController;
-use App\Http\Controllers\API\PartnerController;
-use App\Http\Controllers\API\SubcontractorController;
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\BranchController;
+use App\Http\Controllers\Api\CarController;
+use App\Http\Controllers\Api\ServiceRequestController;
+use App\Http\Controllers\Api\RentalController;
+use App\Http\Controllers\Api\InvoiceController;
+use App\Http\Controllers\Api\ContractController;
+use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\PartnerController;
+use App\Http\Controllers\Api\SubcontractorController;
 
 /*
 |--------------------------------------------------------------------------
@@ -67,6 +67,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('invoices', InvoiceController::class);
     Route::get('/invoices/{id}/pdf', [InvoiceController::class, 'downloadPdf']);
     Route::post('/invoices/{id}/email', [InvoiceController::class, 'emailPdf']);
+
+    // Customer routes
+    Route::post('/customers', [\App\Http\Controllers\Api\CustomerController::class, 'store']);
 
     // Contract routes
     Route::apiResource('contracts', ContractController::class);

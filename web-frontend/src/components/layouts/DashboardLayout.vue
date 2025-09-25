@@ -71,6 +71,12 @@
                   <span v-if="!sidebarCollapsed">Invoices</span>
                 </RouterLink>
               </li>
+              <li>
+                <RouterLink to="/customers/add" class="nav-item" active-class="nav-item-active">
+                  <span class="i-heroicons-user-plus text-lg"></span>
+                  <span v-if="!sidebarCollapsed">Add Customer</span>
+                </RouterLink>
+              </li>
             </template>
           </ul>
         </nav>
