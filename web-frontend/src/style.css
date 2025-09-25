@@ -1,0 +1,90 @@
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+/* Theme tokens */
+:root,
+[data-theme="light"] {
+  --bg-app: #f6f7fb;
+  --bg-surface: #ffffff;
+  --text-title: #0f172a;
+  --text-muted: #64748b;
+  --border-color: #e5e7eb;
+  --nav-fg: #334155;
+  --nav-hover-bg: #f1f5f9;
+  --nav-hover-fg: #0f172a;
+  --nav-active-bg: #e0e7ff;
+  --nav-active-fg: #1e3a8a;
+  --btn-ghost-bg: transparent;
+  --btn-ghost-hover-bg: #f1f5f9;
+  --btn-ghost-fg: #334155;
+  --input-bg: #ffffff;
+  --input-fg: #0f172a;
+  --primary: #4f46e5;
+}
+
+[data-theme="dark-blue"] {
+  --bg-app: #0b1020;
+  --bg-surface: #0f172a;
+  --text-title: #e2e8f0;
+  --text-muted: #94a3b8;
+  --border-color: #1f2a44;
+  --nav-fg: #cbd5e1;
+  --nav-hover-bg: #172036;
+  --nav-hover-fg: #ffffff;
+  --nav-active-bg: #1d2b52;
+  --nav-active-fg: #93c5fd;
+  --btn-ghost-bg: #111827;
+  --btn-ghost-hover-bg: #1f2937;
+  --btn-ghost-fg: #cbd5e1;
+  --input-bg: #0b152b;
+  --input-fg: #e2e8f0;
+  --primary: #2563eb;
+}
+
+[data-theme="dark-blue-neon"] {
+  --bg-app: #070b1a;
+  --bg-surface: #0d1326;
+  --text-title: #e5e7eb;
+  --text-muted: #9ca3af;
+  --border-color: #1b2551;
+  --nav-fg: #c7d2fe;
+  --nav-hover-bg: #111b3a;
+  --nav-hover-fg: #a5b4fc;
+  --nav-active-bg: linear-gradient(90deg, rgba(59,130,246,.15), rgba(147,51,234,.15));
+  --nav-active-fg: #93c5fd;
+  --btn-ghost-bg: rgba(59,130,246,.08);
+  --btn-ghost-hover-bg: rgba(59,130,246,.18);
+  --btn-ghost-fg: #bfdbfe;
+  --input-bg: #0b1024;
+  --input-fg: #e5e7eb;
+  --primary: #3b82f6;
+}
+
+/* Helper classes used in layout if UnoCSS not present */
+.i-heroicons-bars-3::before { content: '≡'; }
+.i-heroicons-home::before { content: '⌂'; }
+.i-heroicons-clipboard-document-list::before { content: '📝'; }
+.i-heroicons-wrench-screwdriver::before { content: '🛠'; }
+.i-heroicons-truck::before { content: '🚗'; }
+.i-heroicons-building-office::before { content: '🏢'; }
+.i-heroicons-users::before { content: '👥'; }
+.i-heroicons-clock::before { content: '⏱'; }
+.i-heroicons-document-text::before { content: '📄'; }
+.i-heroicons-receipt-percent::before { content: '🧾'; }
+#app {
+  width: 100%;
+  margin: 0;
+}
