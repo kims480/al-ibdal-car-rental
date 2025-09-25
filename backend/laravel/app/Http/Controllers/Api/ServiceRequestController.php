@@ -11,6 +11,7 @@ use App\Mail\ServiceRequestNotification;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
 
 class ServiceRequestController extends Controller
 {
@@ -120,7 +121,7 @@ class ServiceRequestController extends Controller
             }
         } catch (\Throwable $e) {
             // Log and continue without failing request
-            \Log::warning('ServiceRequest notification failed: ' . $e->getMessage());
+            Log::warning('ServiceRequest notification failed: ' . $e->getMessage());
         }
 
         return response()->json([
