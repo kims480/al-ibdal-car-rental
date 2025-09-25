@@ -1,155 +1,77 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
-    <!-- Navigation -->
-    <nav class="bg-white shadow">
-      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div class="flex h-16 justify-between">
-          <div class="flex">
-            <div class="flex flex-shrink-0 items-center">
-              <h1 class="text-xl font-bold text-gray-900">AL IBDAL TRADING LLC</h1>
-            </div>
-            <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
-              <router-link
-                to="/partner-dashboard"
-                class="inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
-              >
-                Dashboard
-              </router-link>
-              <router-link
-                to="/partner-service-requests"
-                class="inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
-              >
-                My Service Requests
-              </router-link>
-            </div>
-          </div>
-          <div class="flex items-center">
-            <div class="flex-shrink-0">
-              <span class="text-sm text-gray-700">Welcome, {{ user?.name }}</span>
-            </div>
-            <button
-              @click="handleLogout"
-              class="ml-4 bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 rounded-md"
-            >
-              Logout
-            </button>
-          </div>
-        </div>
-      </div>
-    </nav>
-
-    <!-- Main content -->
-    <main class="mx-auto max-w-7xl py-6 sm:px-6 lg:px-8">
+  <div>
+    <main class="mx-auto max-w-3xl py-6 sm:px-6 lg:px-8">
       <div class="px-4 py-6 sm:px-0">
         <div class="mb-6">
-          <h1 class="text-2xl font-bold text-gray-900">New Service Request</h1>
-          <p class="text-gray-600">Submit a new service or maintenance request</p>
+          <h1 class="text-2xl font-bold text-title">New Rent Request</h1>
+          <p class="text-muted">Please fill in the details below</p>
         </div>
 
-        <!-- Loading indicator -->
-        <div v-if="loading" class="flex justify-center items-center h-64">
-          <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
-        </div>
-
-        <!-- Service Request Form -->
-        <form @submit.prevent="submitRequest" v-if="!loading" class="bg-white shadow overflow-hidden sm:rounded-lg p-6">
-          <!-- Service Type -->
-          <div class="mb-6">
-            <label for="service-type" class="block text-sm font-medium text-gray-700 mb-2">Service Type</label>
-            <select
-              id="service-type"
-              v-model="requestForm.service_type"
-              class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              required
-            >
-              <option value="" disabled>Select a service type</option>
-              <option value="maintenance">Maintenance</option>
-              <option value="repair">Repair</option>
-              <option value="inspection">Inspection</option>
-              <option value="other">Other</option>
-            </select>
-          </div>
-
-          <!-- Car Selection -->
-          <div class="mb-6">
-            <label for="car-id" class="block text-sm font-medium text-gray-700 mb-2">Car</label>
-            <select
-              id="car-id"
-              v-model="requestForm.car_id"
-              class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              required
-            >
-              <option value="" disabled>Select a car</option>
-              <option v-for="car in availableCars" :key="car.id" :value="car.id">
-                {{ car.make }} {{ car.model }} ({{ car.license_plate }})
-              </option>
-            </select>
-          </div>
-
-          <!-- Customer Location -->
-          <div class="mb-6">
-            <label for="customer-location" class="block text-sm font-medium text-gray-700 mb-2">Location</label>
+        <!-- Rent Request Form -->
+        <form @submit.prevent="submitRequest" class="bg-surface shadow border border-gray-200/50 overflow-hidden rounded-lg p-6 space-y-6">
+          <!-- Requester Name -->
+          <div>
+            <label for="customer-name" class="block text-sm font-medium text-title mb-2">Rent Requester Name</label>
             <input
               type="text"
-              id="customer-location"
-              v-model="requestForm.customer_location"
-              class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              placeholder="Enter your current location"
+              id="customer-name"
+              v-model="requestForm.customer_name"
+              class="w-full the-input"
+              placeholder="Your full name"
               required
             />
           </div>
 
-          <!-- Service Period -->
-          <div class="mb-6 grid grid-cols-1 gap-6 md:grid-cols-2">
+          <!-- Phone -->
+          <div>
+            <label for="customer-phone" class="block text-sm font-medium text-title mb-2">Phone</label>
+            <input
+              type="tel"
+              id="customer-phone"
+              v-model="requestForm.customer_phone"
+              class="w-full the-input"
+              placeholder="e.g., 77307045"
+              required
+            />
+          </div>
+
+          <!-- Region / Location -->
+          <div>
+            <label for="customer-location" class="block text-sm font-medium text-title mb-2">Region / Location</label>
+            <input
+              type="text"
+              id="customer-location"
+              v-model="requestForm.customer_location"
+              class="w-full the-input"
+              placeholder="City/Region in Oman"
+              required
+            />
+          </div>
+
+          <!-- Rent Period (with time) -->
+          <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div>
-              <label for="rental-start" class="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+              <label for="rental-start" class="block text-sm font-medium text-title mb-2">Rent Start</label>
               <input
-                type="date"
+                type="datetime-local"
                 id="rental-start"
                 v-model="requestForm.rental_start"
-                class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                :min="minDate"
+                class="w-full the-input"
+                :min="minDateTime"
                 required
               />
             </div>
             <div>
-              <label for="rental-end" class="block text-sm font-medium text-gray-700 mb-2">End Date</label>
+              <label for="rental-end" class="block text-sm font-medium text-title mb-2">Rent End</label>
               <input
-                type="date"
+                type="datetime-local"
                 id="rental-end"
                 v-model="requestForm.rental_end"
-                class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                :min="requestForm.rental_start || minDate"
+                class="w-full the-input"
+                :min="requestForm.rental_start || minDateTime"
                 required
               />
             </div>
-          </div>
-
-          <!-- Priority -->
-          <div class="mb-6">
-            <label for="priority" class="block text-sm font-medium text-gray-700 mb-2">Priority</label>
-            <select
-              id="priority"
-              v-model="requestForm.priority"
-              class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            >
-              <option value="low">Low</option>
-              <option value="medium" selected>Medium</option>
-              <option value="high">High</option>
-              <option value="urgent">Urgent</option>
-            </select>
-          </div>
-
-          <!-- Notes -->
-          <div class="mb-6">
-            <label for="notes" class="block text-sm font-medium text-gray-700 mb-2">Notes</label>
-            <textarea
-              id="notes"
-              v-model="requestForm.notes"
-              rows="4"
-              class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              placeholder="Provide details about your service request..."
-            ></textarea>
           </div>
 
           <!-- Error message -->
@@ -161,14 +83,14 @@
           <div class="flex justify-end space-x-4">
             <router-link
               to="/partner-service-requests"
-              class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-title bg-surface hover:bg-gray-50"
             >
               Cancel
             </router-link>
             <button
               type="submit"
               :disabled="submitting"
-              class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-300"
+              class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300"
             >
               <span v-if="submitting">Submitting...</span>
               <span v-else>Submit Request</span>
@@ -185,57 +107,31 @@ import { ref, computed, onMounted, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { usePartnerServiceRequestStore } from '../stores/partnerServiceRequest'
-import axios from 'axios'
 
 const router = useRouter()
 const authStore = useAuthStore()
 const partnerServiceRequestStore = usePartnerServiceRequestStore()
 
 const user = computed(() => authStore.user)
-const loading = ref(true)
 const submitting = ref(false)
 const error = ref(null)
-const availableCars = ref([])
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
 
-// Get today's date in YYYY-MM-DD format for min date validation
-const minDate = computed(() => {
-  const today = new Date()
-  return today.toISOString().split('T')[0]
+// Min datetime for date-time inputs
+const minDateTime = computed(() => {
+  const now = new Date()
+  const tzOffset = now.getTimezoneOffset() * 60000
+  const localISO = new Date(now - tzOffset).toISOString().slice(0, 16)
+  return localISO
 })
 
 // Initialize request form
 const requestForm = reactive({
-  service_type: '',
-  car_id: '',
   customer_name: '',
   customer_phone: '',
   customer_location: '',
   rental_start: '',
   rental_end: '',
-  priority: 'medium',
-  notes: '',
 })
-
-// Fetch available cars for the partner
-const fetchAvailableCars = async () => {
-  try {
-    loading.value = true
-    const response = await axios.get(`${API_URL}/cars/available`)
-    
-    if (response.data.success) {
-      availableCars.value = response.data.data
-    } else {
-      error.value = 'Failed to fetch available cars'
-    }
-    
-  } catch (err) {
-    console.error('Error fetching cars:', err)
-    error.value = err.response?.data?.message || 'An error occurred while fetching cars'
-  } finally {
-    loading.value = false
-  }
-}
 
 // Submit the service request
 const submitRequest = async () => {
@@ -243,11 +139,29 @@ const submitRequest = async () => {
   submitting.value = true
   
   try {
-    // Set customer info from the logged-in partner
-    requestForm.customer_name = user.value.name
-    requestForm.customer_phone = user.value.phone || '' // Assuming phone is stored in user object
-    
-    const result = await partnerServiceRequestStore.createServiceRequest(requestForm)
+    // Basic validation: end must be after start
+    if (requestForm.rental_start && requestForm.rental_end) {
+      const start = new Date(requestForm.rental_start)
+      const end = new Date(requestForm.rental_end)
+      if (end <= start) {
+        error.value = 'End time must be after start time.'
+        submitting.value = false
+        return
+      }
+    }
+
+    // Normalize datetime-local (YYYY-MM-DDTHH:mm) to space-separated format for backend if needed
+    const normalize = (v) => (typeof v === 'string' ? v.replace('T', ' ').replace(/^(\d{4}-\d{2}-\d{2} \d{2}:\d{2})(?!:)/, '$1:00') : v)
+
+    const payload = {
+      customer_name: requestForm.customer_name?.trim() || '',
+      customer_phone: requestForm.customer_phone?.toString().trim() || '',
+      customer_location: requestForm.customer_location?.trim() || '',
+      rental_start: normalize(requestForm.rental_start),
+      rental_end: normalize(requestForm.rental_end),
+    }
+
+    const result = await partnerServiceRequestStore.createServiceRequest(payload)
     
     if (result.success) {
       router.push({
@@ -266,12 +180,11 @@ const submitRequest = async () => {
   }
 }
 
-const handleLogout = async () => {
-  await authStore.logout()
-  router.push('/login')
-}
-
 onMounted(() => {
-  fetchAvailableCars()
+  // Prefill name and phone from logged-in user if available
+  if (user.value) {
+    requestForm.customer_name = user.value.name || ''
+    requestForm.customer_phone = user.value.phone || ''
+  }
 })
 </script>
