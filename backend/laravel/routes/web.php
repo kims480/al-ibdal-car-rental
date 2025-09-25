@@ -16,3 +16,8 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+
+// Add a named login route for redirects (fixes RouteNotFoundException)
+Route::get('/login', function () {
+    return response('Login page placeholder', 200);
+})->name('login');
