@@ -92,3 +92,16 @@ Develop a comprehensive web and mobile application for "Al Ibdal" to manage car 
 - Audit logs for all actions
 
 ---
+
+### Github repository update
+echo "# al-ibdal-car-rental" >> README.md
+git init
+git add README.md
+git commit -m "first commit"
+git branch -M main
+git remote add origin https://github.com/kims480/al-ibdal-car-rental.git
+git push -u origin main
+### Github repository push an existing repository from the command line
+git remote add origin https://github.com/kims480/al-ibdal-car-rental.git
+git branch -M main
+git push -u origin main
