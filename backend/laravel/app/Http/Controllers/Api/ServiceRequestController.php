@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\ServiceRequest;
 use App\Models\Branch;
 use App\Services\NotificationService;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\ServiceRequestNotification;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -100,8 +103,24 @@ class ServiceRequestController extends Controller
         ]);
 
         // Send notifications
-        if (method_exists($this->notificationService, 'sendServiceRequestNotification')) {
-            $this->notificationService->sendServiceRequestNotification($serviceRequest, 'created');
+        // 1) If customer email exists on user table (matched by phone) or request includes 'email', notify requester
+        try {
+            $recipientUser = User::where('phone', $serviceRequest->customer_phone)->first();
+            if ($recipientUser) {
+                Mail::to($recipientUser->email)->queue(new ServiceRequestNotification($serviceRequest->fresh(['branch','car','partner']), $recipientUser, 'created'));
+            } elseif ($request->filled('email')) {
+                $pseudo = new User(['name' => $serviceRequest->customer_name, 'email' => $request->email]);
+                Mail::to($request->email)->queue(new ServiceRequestNotification($serviceRequest->fresh(['branch','car','partner']), $pseudo, 'created'));
+            }
+
+            // 2) Notify admins
+            $admins = User::where('role', 'admin')->where('active', true)->get();
+            foreach ($admins as $admin) {
+                Mail::to($admin->email)->queue(new ServiceRequestNotification($serviceRequest->fresh(['branch','car','partner']), $admin, 'created'));
+            }
+        } catch (\Throwable $e) {
+            // Log and continue without failing request
+            \Log::warning('ServiceRequest notification failed: ' . $e->getMessage());
         }
 
         return response()->json([

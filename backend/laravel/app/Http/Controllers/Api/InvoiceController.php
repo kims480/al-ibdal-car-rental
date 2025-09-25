@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\API;
+namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Invoice;
@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Models\User;
 use Illuminate\Support\Facades\Mail;
 
 class InvoiceController extends Controller
@@ -144,9 +145,8 @@ class InvoiceController extends Controller
             ], 403);
         }
 
-        $pdf = PDF::loadView('pdfs.invoice', compact('invoice'));
-        
-        return $pdf->download('invoice-' . $invoice->invoice_number . '.pdf');
+    $pdf = Pdf::loadView('pdfs.invoice', compact('invoice'));
+    return $pdf->download('invoice-' . $invoice->invoice_number . '.pdf');
     }
 
     /**
@@ -173,11 +173,28 @@ class InvoiceController extends Controller
         }
 
         try {
-            $pdf = PDF::loadView('pdfs.invoice', compact('invoice'));
+            $pdf = Pdf::loadView('pdfs.invoice', compact('invoice'));
             $pdfContent = $pdf->output();
 
-            Mail::send('emails.invoice', compact('invoice'), function ($message) use ($invoice, $pdfContent) {
-                $message->to($invoice->serviceRequest->email)
+            // Resolve recipient email
+            $toEmail = null;
+            // Try to find a user by phone
+            if ($invoice->serviceRequest && $invoice->serviceRequest->customer_phone) {
+                $recipientUser = User::where('phone', $invoice->serviceRequest->customer_phone)->first();
+                if ($recipientUser && $recipientUser->email) {
+                    $toEmail = $recipientUser->email;
+                }
+            }
+
+            if (!$toEmail) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Customer email not available for this service request'
+                ], 422);
+            }
+
+            Mail::send('emails.invoice', compact('invoice'), function ($message) use ($invoice, $pdfContent, $toEmail) {
+                $message->to($toEmail)
                        ->subject('Invoice - ' . $invoice->invoice_number . ' - AL IBDAL TRADING LLC')
                        ->attachData($pdfContent, 'invoice-' . $invoice->invoice_number . '.pdf', [
                            'mime' => 'application/pdf',
