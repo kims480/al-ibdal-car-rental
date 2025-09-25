@@ -10,9 +10,9 @@ const authStore = useAuthStore()
 const route = useRoute()
 const ui = useUIStore()
 
-// Determine if the current route is the landing page
-const isLandingPage = computed(() => {
-  return route.name === 'Home'
+// Determine if the current route is public (no dashboard chrome)
+const isPublicRoute = computed(() => {
+  return route.name === 'Home' || route.name === 'Login'
 })
 
 onMounted(() => {
@@ -24,10 +24,10 @@ onMounted(() => {
 </script>
 
 <template>
-  <div id="app" :data-theme="ui.theme" :class="{'min-h-screen': !isLandingPage}">
-    <template v-if="isLandingPage">
+  <div id="app" :data-theme="ui.theme" :class="{'min-h-screen': !isPublicRoute}">
+    <template v-if="isPublicRoute">
       <RouterView />
-      <AppFooter />
+      <AppFooter v-if="route.name === 'Home'" />
     </template>
     <template v-else>
       <DashboardLayout>

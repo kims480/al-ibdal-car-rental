@@ -493,15 +493,15 @@ const t = computed(() => {
   return translations.en;
 });
 
-import VueScrollTo from 'vue-scrollto';
-import AOS from 'aos';
+// Heavy libs are dynamically imported in onMounted to keep initial bundle small
+// Keep CSS side-effects loaded globally (lightweight)
 import 'aos/dist/aos.css';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
-gsap.registerPlugin(ScrollTrigger);
+let AOSLib = null
+let GSAP = null
+let ScrollTriggerLib = null
+let Leaflet = null
 
 // References for DOM elements
 const parallaxBg = ref(null);
@@ -635,16 +635,17 @@ const initMap = () => {
   if (!branchesMap.value) return;
 
   // Create map centered on UAE
-  map = L.map(branchesMap.value).setView([25.276987, 55.296249], 8);
+  if (!Leaflet) return
+  map = Leaflet.map(branchesMap.value).setView([25.276987, 55.296249], 8);
   
   // Add OpenStreetMap tiles
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  Leaflet.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
   }).addTo(map);
   
   // Add markers for each branch
   branches.forEach((branch, index) => {
-    const marker = L.marker(branch.location)
+    const marker = Leaflet.marker(branch.location)
       .addTo(map)
       .bindPopup(`
         <strong>${branch.name}</strong><br>
@@ -679,7 +680,9 @@ const setupParallax = () => {
   parallaxBg.value.style.height = '100%';
   
   // Setup GSAP ScrollTrigger for parallax effect
-  gsap.to(parallaxBg.value, {
+  if (!GSAP || !ScrollTriggerLib) return
+  GSAP.registerPlugin(ScrollTriggerLib)
+  GSAP.to(parallaxBg.value, {
     backgroundPosition: '50% 30%',
     ease: 'none',
     scrollTrigger: {
@@ -691,22 +694,35 @@ const setupParallax = () => {
   });
 };
 
-onMounted(() => {
+onMounted(async () => {
+  // Dynamic imports for heavy libs
+  const [AOSModule, GSAPModule, ScrollTriggerModule, LeafletModule] = await Promise.all([
+    import('aos'),
+    import('gsap'),
+    import('gsap/ScrollTrigger'),
+    import('leaflet')
+  ])
+
+  AOSLib = AOSModule.default
+  GSAP = GSAPModule.default
+  ScrollTriggerLib = ScrollTriggerModule.ScrollTrigger || ScrollTriggerModule.default || ScrollTriggerModule
+  Leaflet = LeafletModule.default
+
   // Initialize AOS animation library
-  AOS.init({
+  AOSLib?.init({
     duration: 1000,
     once: true,
     offset: 100
-  });
+  })
   
   // Setup parallax effect
-  setupParallax();
+  setupParallax()
   
   // Start car slider
-  startCarSlider();
+  startCarSlider()
   
   // Initialize the map
-  initMap();
+  initMap()
 });
 
 onUnmounted(() => {

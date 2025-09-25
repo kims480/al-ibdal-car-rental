@@ -141,25 +141,12 @@
                 </span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                <div class="flex space-x-3">
-                  <button 
-                    @click="viewInvoice(invoice)"
-                    class="text-indigo-600 hover:text-indigo-900"
-                  >
-                    View
-                  </button>
-                  <button 
-                    @click="openEditModal(invoice)"
-                    class="text-blue-600 hover:text-blue-900"
-                  >
-                    Edit
-                  </button>
-                  <button 
-                    @click="confirmDelete(invoice)"
-                    class="text-red-600 hover:text-red-900"
-                  >
-                    Delete
-                  </button>
+                <div class="flex flex-wrap gap-3">
+                  <button @click="viewInvoice(invoice)" class="text-indigo-600 hover:text-indigo-900">View</button>
+                  <button @click="openEditModal(invoice)" class="text-blue-600 hover:text-blue-900">Edit</button>
+                  <button @click="confirmDelete(invoice)" class="text-red-600 hover:text-red-900">Delete</button>
+                  <button @click="downloadInvoicePdf(invoice)" class="text-emerald-600 hover:text-emerald-800">Download PDF</button>
+                  <button @click="emailInvoice(invoice)" class="text-amber-600 hover:text-amber-800">Email PDF</button>
                 </div>
               </td>
             </tr>
@@ -414,6 +401,24 @@
               </svg>
             </button>
             <button 
+              @click="downloadInvoicePdf(currentInvoice)" 
+              class="p-2 bg-emerald-50 rounded-md text-emerald-600 hover:bg-emerald-100"
+              title="Download PDF"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" />
+              </svg>
+            </button>
+            <button 
+              @click="emailInvoice(currentInvoice)" 
+              class="p-2 bg-amber-50 rounded-md text-amber-600 hover:bg-amber-100"
+              title="Email PDF"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8m-2 8H5a2 2 0 01-2-2V8a2 2 0 012-2h14a2 2 0 012 2v6a2 2 0 01-2 2z" />
+              </svg>
+            </button>
+            <button 
               @click="closeViewModal" 
               class="p-2 bg-gray-50 rounded-md text-gray-500 hover:bg-gray-100"
               title="Close"
@@ -547,6 +552,7 @@ const showViewModal = ref(false)
 const isEditing = ref(false)
 const submitting = ref(false)
 const invoiceToPrint = ref(null)
+const apiBase = (axios.defaults && axios.defaults.baseURL) || 'http://127.0.0.1:8000/api'
 
 // Pagination
 const pagination = reactive({
@@ -945,34 +951,40 @@ const deleteInvoice = async (invoice) => {
 
 // Print invoice
 const printInvoice = () => {
+  // Prefer server-rendered PDF if available
+  if (currentInvoice.value?.id) {
+    const url = `${apiBase}/invoices/${currentInvoice.value.id}/pdf`
+    const w = window.open(url, '_blank')
+    if (w) { return }
+  }
+  // Fallback to client-side print of the modal content
   if (!invoiceToPrint.value) return
-  
-  const printContents = invoiceToPrint.value.innerHTML
-  const originalContents = document.body.innerHTML
-  
-  // Open a new window with just the invoice content
-  const printWindow = window.open('', '_blank')
-  printWindow.document.write(`
-    <html>
-      <head>
-        <title>Invoice #${currentInvoice.value.invoice_number}</title>
-        <style>
-          body { font-family: Arial, sans-serif; padding: 20px; }
-          table { width: 100%; border-collapse: collapse; }
-          th, td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
-          th { background-color: #f3f4f6; }
-        </style>
-      </head>
-      <body>
-        ${printContents}
-      </body>
-    </html>
-  `)
-  
-  printWindow.document.close()
-  printWindow.focus()
-  printWindow.print()
-  printWindow.close()
+  const html = `<!doctype html><html><head><title>Invoice #${currentInvoice.value?.invoice_number || ''}</title>
+  <style>body{font-family:Arial, sans-serif; padding:20px;}table{width:100%;border-collapse:collapse}th,td{padding:8px;text-align:left;border-bottom:1px solid #ddd}th{background:#f3f4f6}</style>
+  </head><body>${invoiceToPrint.value.innerHTML}</body></html>`
+  const win = window.open('', '_blank')
+  if (!win) return
+  win.document.write(html)
+  win.document.close()
+  win.focus()
+  win.print()
+  win.close()
+}
+
+const downloadInvoicePdf = async (invoice) => {
+  if (!invoice?.id) return
+  const url = `${apiBase}/invoices/${invoice.id}/pdf`
+  window.open(url, '_blank')
+}
+
+const emailInvoice = async (invoice) => {
+  if (!invoice?.id) return
+  try {
+    await axios.post(`/invoices/${invoice.id}/email`)
+    alert('Invoice email sent successfully')
+  } catch (e) {
+    alert(e.response?.data?.message || 'Failed to email invoice')
+  }
 }
 
 // Pagination

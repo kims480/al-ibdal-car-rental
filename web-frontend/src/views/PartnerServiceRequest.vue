@@ -1,54 +1,15 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
-    <!-- Navigation -->
-    <nav class="bg-white shadow">
-      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div class="flex h-16 justify-between">
-          <div class="flex">
-            <div class="flex flex-shrink-0 items-center">
-              <h1 class="text-xl font-bold text-gray-900">AL IBDAL TRADING LLC</h1>
-            </div>
-            <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
-              <router-link
-                to="/partner-dashboard"
-                class="inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
-              >
-                Dashboard
-              </router-link>
-              <router-link
-                to="/partner-service-requests"
-                class="inline-flex items-center border-b-2 border-indigo-500 px-1 pt-1 text-sm font-medium text-gray-900"
-              >
-                My Service Requests
-              </router-link>
-            </div>
-          </div>
-          <div class="flex items-center">
-            <div class="flex-shrink-0">
-              <span class="text-sm text-gray-700">Welcome, {{ user?.name }}</span>
-            </div>
-            <button
-              @click="handleLogout"
-              class="ml-4 bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 rounded-md"
-            >
-              Logout
-            </button>
-          </div>
-        </div>
-      </div>
-    </nav>
-
-    <!-- Main content -->
+  <div>
     <main class="mx-auto max-w-7xl py-6 sm:px-6 lg:px-8">
       <div class="px-4 py-6 sm:px-0">
         <div class="mb-6 flex justify-between items-center">
           <div>
-            <h1 class="text-2xl font-bold text-gray-900">My Service Requests</h1>
-            <p class="text-gray-600">View and manage all your service and maintenance requests</p>
+            <h1 class="text-2xl font-bold text-title">My Service Requests</h1>
+            <p class="text-muted">View and manage your requests</p>
           </div>
           <router-link
             to="/partner-service-requests/new"
-            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700"
           >
             New Request
           </router-link>
@@ -60,14 +21,14 @@
         </div>
 
         <!-- Filters -->
-        <div v-else class="bg-white shadow rounded-lg mb-6 p-4">
-          <div class="flex flex-wrap gap-4">
+        <div v-else class="bg-surface border border-gray-200/50 shadow rounded-lg mb-6 p-4">
+          <div class="flex flex-wrap gap-4 items-end">
             <div class="flex items-center">
-              <label for="status-filter" class="block text-sm font-medium text-gray-700 mr-2">Status:</label>
+              <label for="status-filter" class="block text-sm font-medium text-title mr-2">Status:</label>
               <select
                 id="status-filter"
                 v-model="filters.status"
-                class="mt-1 block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+                class="the-input"
               >
                 <option value="">All</option>
                 <option value="pending">Pending</option>
@@ -79,34 +40,19 @@
             </div>
 
             <div class="flex items-center">
-              <label for="type-filter" class="block text-sm font-medium text-gray-700 mr-2">Type:</label>
-              <select
-                id="type-filter"
-                v-model="filters.serviceType"
-                class="mt-1 block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-              >
-                <option value="">All</option>
-                <option value="maintenance">Maintenance</option>
-                <option value="repair">Repair</option>
-                <option value="inspection">Inspection</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
-
-            <div class="flex items-center">
-              <label for="search-filter" class="block text-sm font-medium text-gray-700 mr-2">Search:</label>
+              <label for="search-filter" class="block text-sm font-medium text-title mr-2">Search:</label>
               <input
                 type="text"
                 id="search-filter"
                 v-model="filters.search"
-                placeholder="Search requests..."
-                class="mt-1 block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+                placeholder="Search by name, phone, location..."
+                class="the-input"
               />
             </div>
 
             <button
               @click="resetFilters"
-              class="px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md"
+              class="px-3 py-2 text-sm text-title hover:bg-gray-100 rounded-md"
             >
               Reset Filters
             </button>
@@ -114,7 +60,7 @@
         </div>
 
         <!-- Service Requests Table -->
-        <div v-if="!loading" class="bg-white shadow rounded-lg overflow-hidden">
+        <div v-if="!loading" class="bg-surface border border-gray-200/50 shadow rounded-lg overflow-hidden">
           <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
               <thead class="bg-gray-50">
@@ -123,19 +69,19 @@
                     ID
                   </th>
                   <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Date
+                    Created
                   </th>
                   <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Service Type
+                    Requester
                   </th>
                   <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Priority
+                    Phone
                   </th>
                   <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
+                    Location
                   </th>
                   <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Assigned To
+                    Rent Period
                   </th>
                   <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Actions
@@ -156,20 +102,19 @@
                     {{ formatDate(request.created_at) }}
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {{ request.service_type || 'General' }}
+                    {{ request.customer_name || '—' }}
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <span :class="[
-                      'px-2 py-1 text-xs font-medium rounded-full',
-                      {
-                        'bg-green-100 text-green-800': request.priority === 'low',
-                        'bg-blue-100 text-blue-800': request.priority === 'medium',
-                        'bg-yellow-100 text-yellow-800': request.priority === 'high',
-                        'bg-red-100 text-red-800': request.priority === 'urgent'
-                      }
-                    ]">
-                      {{ formatPriority(request.priority) }}
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {{ request.customer_phone || '—' }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {{ request.customer_location || '—' }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <span v-if="request.rental_start && request.rental_end">
+                      {{ formatDateTime(request.rental_start) }} - {{ formatDateTime(request.rental_end) }}
                     </span>
+                    <span v-else>—</span>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
                     <span :class="[
@@ -183,9 +128,6 @@
                     ]">
                       {{ formatStatus(request.status) }}
                     </span>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {{ request.subcontractor?.name || 'Not Assigned' }}
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     <button
@@ -211,9 +153,9 @@
         <!-- View Request Modal -->
         <div v-if="showViewModal" class="fixed inset-0 flex items-center justify-center z-50">
           <div class="fixed inset-0 bg-black opacity-50"></div>
-          <div class="relative bg-white rounded-lg max-w-2xl w-full mx-4 shadow-xl p-6">
+          <div class="relative bg-surface border border-gray-200/50 rounded-lg max-w-2xl w-full mx-4 shadow-xl p-6">
             <div class="flex justify-between items-start">
-              <h3 class="text-lg font-semibold text-gray-900">Service Request Details</h3>
+              <h3 class="text-lg font-semibold text-title">Service Request Details</h3>
               <button 
                 @click="showViewModal = false" 
                 class="text-gray-400 hover:text-gray-500"
@@ -250,38 +192,26 @@
                   </p>
                 </div>
                 <div>
+                  <h4 class="text-sm font-medium text-gray-500">Requester</h4>
+                  <p class="text-gray-900">{{ currentRequest.customer_name }} — {{ currentRequest.customer_phone }}</p>
+                </div>
+                <div>
+                  <h4 class="text-sm font-medium text-gray-500">Location</h4>
+                  <p class="text-gray-900">{{ currentRequest.customer_location || '—' }}</p>
+                </div>
+                <div>
                   <h4 class="text-sm font-medium text-gray-500">Created On</h4>
                   <p class="text-gray-900">{{ formatDate(currentRequest.created_at) }}</p>
                 </div>
                 <div>
-                  <h4 class="text-sm font-medium text-gray-500">Service Type</h4>
-                  <p class="text-gray-900">{{ currentRequest.service_type || 'General' }}</p>
-                </div>
-                <div>
-                  <h4 class="text-sm font-medium text-gray-500">Priority</h4>
-                  <p :class="[
-                    'inline-block px-2 py-1 text-xs font-medium rounded-full',
-                    {
-                      'bg-green-100 text-green-800': currentRequest.priority === 'low',
-                      'bg-blue-100 text-blue-800': currentRequest.priority === 'medium',
-                      'bg-yellow-100 text-yellow-800': currentRequest.priority === 'high',
-                      'bg-red-100 text-red-800': currentRequest.priority === 'urgent'
-                    }
-                  ]">
-                    {{ formatPriority(currentRequest.priority) }}
+                  <h4 class="text-sm font-medium text-gray-500">Rent Period</h4>
+                  <p class="text-gray-900">
+                    <span v-if="currentRequest.rental_start && currentRequest.rental_end">
+                      {{ formatDateTime(currentRequest.rental_start) }} - {{ formatDateTime(currentRequest.rental_end) }}
+                    </span>
+                    <span v-else>—</span>
                   </p>
                 </div>
-                <div v-if="currentRequest.subcontractor">
-                  <h4 class="text-sm font-medium text-gray-500">Assigned To</h4>
-                  <p class="text-gray-900">{{ currentRequest.subcontractor.name }}</p>
-                </div>
-              </div>
-
-              <div class="mb-6">
-                <h4 class="text-sm font-medium text-gray-500 mb-1">Notes</h4>
-                <p class="text-gray-900 whitespace-pre-line p-3 bg-gray-50 rounded">
-                  {{ currentRequest.notes || 'No notes provided' }}
-                </p>
               </div>
 
               <div v-if="currentRequest.status === 'pending'" class="mt-6 flex justify-end">
@@ -319,7 +249,6 @@ const currentRequest = ref(null)
 // Filters
 const filters = reactive({
   status: '',
-  serviceType: '',
   search: ''
 })
 
@@ -331,19 +260,14 @@ const filteredRequests = computed(() => {
       return false
     }
     
-    // Service type filter
-    if (filters.serviceType && request.service_type !== filters.serviceType) {
-      return false
-    }
-    
     // Search filter
     if (filters.search) {
       const searchTerm = filters.search.toLowerCase()
       const requestData = [
         request.id?.toString(),
-        request.service_type?.toLowerCase(),
-        request.notes?.toLowerCase(),
-        request.subcontractor?.name?.toLowerCase()
+        request.customer_name?.toLowerCase(),
+        request.customer_phone?.toLowerCase(),
+        request.customer_location?.toLowerCase()
       ].filter(Boolean).join(' ')
       
       if (!requestData.includes(searchTerm)) {
@@ -383,20 +307,14 @@ const formatStatus = (status) => {
   }
 }
 
-// Format priority for display
-const formatPriority = (priority) => {
-  switch (priority) {
-    case 'low':
-      return 'Low'
-    case 'medium':
-      return 'Medium'
-    case 'high':
-      return 'High'
-    case 'urgent':
-      return 'Urgent'
-    default:
-      return priority?.charAt(0).toUpperCase() + priority?.slice(1) || 'Medium'
-  }
+// Format date-time for display
+const formatDateTime = (dateTimeString) => {
+  if (!dateTimeString) return ''
+  const date = new Date(dateTimeString.replace(' ', 'T'))
+  return date.toLocaleString(undefined, {
+    year: 'numeric', month: 'short', day: 'numeric',
+    hour: '2-digit', minute: '2-digit'
+  })
 }
 
 // Reset filters
@@ -434,11 +352,6 @@ const cancelRequest = async (requestId) => {
     }
     loading.value = false
   }
-}
-
-const handleLogout = async () => {
-  await authStore.logout()
-  router.push('/login')
 }
 
 onMounted(async () => {

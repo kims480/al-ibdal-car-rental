@@ -38,38 +38,38 @@ body {
 [data-theme="dark-blue"] {
   --bg-app: #0b1020;
   --bg-surface: #0f172a;
-  --text-title: #e2e8f0;
-  --text-muted: #94a3b8;
+  --text-title: #f3f4f6;
+  --text-muted: #b6c2d6;
   --border-color: #1f2a44;
-  --nav-fg: #cbd5e1;
+  --nav-fg: #e0e7ef;
   --nav-hover-bg: #172036;
-  --nav-hover-fg: #ffffff;
+  --nav-hover-fg: #f3f4f6;
   --nav-active-bg: #1d2b52;
-  --nav-active-fg: #93c5fd;
+  --nav-active-fg: #60a5fa;
   --btn-ghost-bg: #111827;
   --btn-ghost-hover-bg: #1f2937;
-  --btn-ghost-fg: #cbd5e1;
+  --btn-ghost-fg: #e0e7ef;
   --input-bg: #0b152b;
-  --input-fg: #e2e8f0;
+  --input-fg: #f3f4f6;
   --primary: #2563eb;
 }
 
 [data-theme="dark-blue-neon"] {
   --bg-app: #070b1a;
   --bg-surface: #0d1326;
-  --text-title: #e5e7eb;
-  --text-muted: #9ca3af;
+  --text-title: #f3f4f6;
+  --text-muted: #b6c2d6;
   --border-color: #1b2551;
-  --nav-fg: #c7d2fe;
+  --nav-fg: #e0e7ef;
   --nav-hover-bg: #111b3a;
-  --nav-hover-fg: #a5b4fc;
+  --nav-hover-fg: #f3f4f6;
   --nav-active-bg: linear-gradient(90deg, rgba(59,130,246,.15), rgba(147,51,234,.15));
-  --nav-active-fg: #93c5fd;
+  --nav-active-fg: #60a5fa;
   --btn-ghost-bg: rgba(59,130,246,.08);
   --btn-ghost-hover-bg: rgba(59,130,246,.18);
-  --btn-ghost-fg: #bfdbfe;
+  --btn-ghost-fg: #e0e7ef;
   --input-bg: #0b1024;
-  --input-fg: #e5e7eb;
+  --input-fg: #f3f4f6;
   --primary: #3b82f6;
 }
 

@@ -3,11 +3,8 @@
     <!-- Sidebar -->
     <aside :class="['sticky top-0 h-screen transition-all duration-300', sidebarCollapsed ? 'w-16' : 'w-64']">
       <div class="h-full flex flex-col border-r border-gray-200/50 bg-surface">
-        <div class="flex items-center justify-between p-4">
+        <div class="flex items-center p-4">
           <img src="/src/assets/logo.svg" alt="Logo" class="h-8 w-auto mr-2" v-if="!sidebarCollapsed" />
-          <button @click="toggleSidebar" class="icon-btn" :title="sidebarCollapsed ? 'Expand' : 'Collapse'">
-            <span class="i-heroicons-bars-3 text-xl text-muted"></span>
-          </button>
         </div>
         <nav class="flex-1 overflow-y-auto">
           <ul class="px-2 space-y-1">
@@ -15,6 +12,12 @@
               <RouterLink to="/dashboard" class="nav-item" active-class="nav-item-active">
                 <span class="i-heroicons-home text-lg"></span>
                 <span v-if="!sidebarCollapsed">Dashboard</span>
+              </RouterLink>
+            </li>
+            <li>
+              <RouterLink to="/profile" class="nav-item" active-class="nav-item-active">
+                <span class="i-heroicons-users text-lg"></span>
+                <span v-if="!sidebarCollapsed">Profile</span>
               </RouterLink>
             </li>
             <template v-if="user?.role === 'partner'">
@@ -152,9 +155,10 @@ async function logout() {
   display: flex; align-items: center; gap: 0.75rem;
   padding: 0.625rem 0.75rem; border-radius: 0.5rem;
   color: var(--nav-fg);
+  text-decoration: none;
 }
-.nav-item:hover { background: var(--nav-hover-bg); color: var(--nav-hover-fg); }
-.nav-item-active { background: var(--nav-active-bg); color: var(--nav-active-fg); }
+.nav-item:hover { background: var(--nav-hover-bg); color: var(--nav-hover-fg); text-decoration: none; }
+.nav-item-active { background: var(--nav-active-bg); color: var(--nav-active-fg); text-decoration: none; }
 
 .icon-btn { display: inline-flex; align-items: center; justify-content: center; padding: 0.375rem; border-radius: 0.5rem; background: var(--btn-ghost-bg); color: var(--btn-ghost-fg); }
 .icon-btn:hover { background: var(--btn-ghost-hover-bg); }
@@ -162,4 +166,8 @@ async function logout() {
 .the-input { background: var(--input-bg); color: var(--input-fg); border: 1px solid var(--border-color); border-radius: 0.5rem; padding: 0.5rem; }
 .the-btn { background: var(--primary); color: #fff; border-radius: 0.5rem; padding: 0.5rem; }
 .the-btn:hover { filter: brightness(1.05); }
+
+/* Remove underline from any links inside header */
+a { text-decoration: none; }
+a:hover { text-decoration: none; }
 </style>

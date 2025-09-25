@@ -1,26 +1,28 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import { createRouter, createWebHistory } from 'vue-router'
+const UserProfile = () => import('./views/UserProfile.vue')
 import 'virtual:uno.css'
 import './style.css'
 import App from './App.vue'
 
 // Import views
-import Home from './views/Home.vue'
-import Login from './views/Login.vue'
-import Dashboard from './views/Dashboard.vue'
-import ServiceRequests from './views/ServiceRequests.vue'
-import Cars from './views/Cars.vue'
-import Branches from './views/Branches.vue'
-import Users from './views/Users.vue'
-import Rentals from './views/Rentals.vue'
-import Contracts from './views/Contracts.vue'
-import Invoices from './views/Invoices.vue'
+// Lazy-loaded views for code splitting
+const Home = () => import('./views/Home.vue')
+const Login = () => import('./views/Login.vue')
+const Dashboard = () => import('./views/Dashboard.vue')
+const ServiceRequests = () => import('./views/ServiceRequests.vue')
+const Cars = () => import('./views/Cars.vue')
+const Branches = () => import('./views/Branches.vue')
+const Users = () => import('./views/Users.vue')
+const Rentals = () => import('./views/Rentals.vue')
+const Contracts = () => import('./views/Contracts.vue')
+const Invoices = () => import('./views/Invoices.vue')
 
-// Import partner views
-import PartnerDashboard from './views/PartnerDashboard.vue'
-import PartnerServiceRequest from './views/PartnerServiceRequest.vue'
-import PartnerServiceRequestForm from './views/PartnerServiceRequestForm.vue'
+// Partner views (lazy)
+const PartnerDashboard = () => import('./views/PartnerDashboard.vue')
+const PartnerServiceRequest = () => import('./views/PartnerServiceRequest.vue')
+const PartnerServiceRequestForm = () => import('./views/PartnerServiceRequestForm.vue')
 
 // Import components
 import AppFooter from './components/AppFooter.vue'
@@ -35,6 +37,12 @@ const routes = [
     name: 'Dashboard',
     meta: { requiresAuth: true }
   },
+    { 
+      path: '/profile', 
+      component: UserProfile, 
+      name: 'UserProfile',
+      meta: { requiresAuth: true }
+    },
   { 
     path: '/service-requests', 
     component: ServiceRequests, 
@@ -57,7 +65,7 @@ const routes = [
     path: '/users', 
     component: Users, 
     name: 'Users',
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true, adminOnly: true }
   },
   { 
     path: '/rentals', 
@@ -122,6 +130,9 @@ router.beforeEach((to, from, next) => {
       next('/login')
     } else if (to.matched.some(record => record.meta.partnerOnly) && user?.role !== 'partner') {
       // Redirect non-partners away from partner pages
+      next('/dashboard')
+    } else if (to.matched.some(record => record.meta.adminOnly) && user?.role !== 'admin') {
+      // Redirect non-admins away from admin pages
       next('/dashboard')
     } else {
       next()
