@@ -16,8 +16,8 @@ return new class extends Migration
             $table->string('customer_name');
             $table->string('customer_phone');
             $table->string('customer_location');
-            $table->date('rental_start');
-            $table->date('rental_end');
+            $table->dateTime('rental_start');
+            $table->dateTime('rental_end');
             $table->foreignId('car_id')->nullable()->constrained();
             $table->foreignId('branch_id')->nullable()->constrained();
             $table->foreignId('partner_id')->nullable()->constrained();

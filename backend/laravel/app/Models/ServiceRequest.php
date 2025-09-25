@@ -26,8 +26,8 @@ class ServiceRequest extends Model
     ];
 
     protected $casts = [
-        'rental_start' => 'date',
-        'rental_end' => 'date',
+        'rental_start' => 'datetime',
+        'rental_end' => 'datetime',
     ];
 
     // Relationships
