@@ -15,38 +15,44 @@ class AdminUserSeeder extends Seeder
     public function run(): void
     {
         // Create admin user
-        User::create([
-            'name' => 'AL IBDAL TRADING LLC Admin',
-            'email' => 'admin@alibdaltrading.com',
-            'password' => Hash::make('password'),
-            'role' => 'admin',
-            'phone' => '77307045',
-            'city' => 'Muscat',
-            'active' => true,
-        ]);
+        User::firstOrCreate(
+            ['email' => 'admin@alibdaltrading.com'],
+            [
+                'name' => 'AL IBDAL TRADING LLC Admin',
+                'password' => Hash::make('password'),
+                'role' => 'admin',
+                'phone' => '77307045',
+                'city' => 'Muscat',
+                'active' => true,
+            ]
+        );
 
         // Create a branch manager for Muscat branch
-        User::create([
-            'name' => 'Muscat Branch Manager',
-            'email' => 'manager@alibdaltrading.com',
-            'password' => Hash::make('password'),
-            'role' => 'branch_manager',
-            'phone' => '77307046',
-            'city' => 'Muscat',
-            'branch_id' => 1, // Muscat - Al Khuwair Branch
-            'active' => true,
-        ]);
+        User::firstOrCreate(
+            ['email' => 'manager@alibdaltrading.com'],
+            [
+                'name' => 'Muscat Branch Manager',
+                'password' => Hash::make('password'),
+                'role' => 'branch_manager',
+                'phone' => '77307046',
+                'city' => 'Muscat',
+                'branch_id' => 1, // Muscat - Al Khuwair Branch
+                'active' => true,
+            ]
+        );
 
         // Create a partner user
-        User::create([
-            'name' => 'Partner Staff',
-            'email' => 'partner@alibdaltrading.com',
-            'password' => Hash::make('password'),
-            'role' => 'partner',
-            'phone' => '77307047',
-            'city' => 'Muscat',
-            'branch_id' => 1,
-            'active' => true,
-        ]);
+        User::firstOrCreate(
+            ['email' => 'partner@alibdaltrading.com'],
+            [
+                'name' => 'Partner Staff',
+                'password' => Hash::make('password'),
+                'role' => 'partner',
+                'phone' => '77307047',
+                'city' => 'Muscat',
+                'branch_id' => 1,
+                'active' => true,
+            ]
+        );
     }
 }

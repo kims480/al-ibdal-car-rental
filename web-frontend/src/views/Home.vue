@@ -1,9 +1,15 @@
 <template>
   <div>
     <!-- Language Switcher -->
-    <div class="flex justify-end p-4">
-  <button :class="['px-4 py-2 rounded', lang === 'en' ? 'bg-yellow-500 text-gray-900' : 'bg-gray-200 text-gray-700']" @click="lang = 'en'">English</button>
-  <button :class="['px-4 py-2 rounded ml-2', lang === 'ar' ? 'bg-yellow-500 text-gray-900' : 'bg-gray-200 text-gray-700']" @click="lang = 'ar'">العربية</button>
+    <div class="flex justify-between items-center p-4">
+      <div class="flex items-center">
+        <img src="/src/assets/logo.svg" alt="Al-Ibdal Trading LLC" class="h-10 w-auto mr-4" />
+        <span class="text-lg font-semibold text-gray-800">Al-Ibdal Trading LLC</span>
+      </div>
+      <div class="flex">
+        <button :class="['px-4 py-2 rounded transition-colors', lang === 'en' ? 'bg-yellow-500 text-gray-900' : 'bg-gray-200 text-gray-700 hover:bg-gray-300']" @click="lang = 'en'">English</button>
+        <button :class="['px-4 py-2 rounded ml-2 transition-colors', lang === 'ar' ? 'bg-yellow-500 text-gray-900' : 'bg-gray-200 text-gray-700 hover:bg-gray-300']" @click="lang = 'ar'">العربية</button>
+      </div>
     </div>
     <div class="landing-page">
     <!-- Hero Section with Parallax Effect -->

@@ -69,7 +69,8 @@ class CarController extends Controller
             'branch_id' => 'nullable|exists:branches,id',
               'description' => 'nullable|string|max:1000',
               'vin' => 'nullable|string|max:50',
-              'features' => 'nullable|string|max:1000',
+              'features' => 'nullable|array',
+              'features.*' => 'string|max:100',
               'notes' => 'nullable|string|max:1000',
         ]);
 
@@ -157,7 +158,8 @@ class CarController extends Controller
             'status' => 'sometimes|required|in:available,rented,maintenance',
               'description' => 'sometimes|nullable|string|max:1000',
               'vin' => 'sometimes|nullable|string|max:50',
-              'features' => 'sometimes|nullable|string|max:1000',
+              'features' => 'sometimes|nullable|array',
+              'features.*' => 'string|max:100',
               'notes' => 'sometimes|nullable|string|max:1000',
         ]);
 

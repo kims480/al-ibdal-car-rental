@@ -314,13 +314,23 @@
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Features</label>
-            <textarea
-              v-model="form.features"
-              rows="3"
-              placeholder="AC, Navigation, Bluetooth, Leather seats, etc."
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            ></textarea>
+            <label class="block text-sm font-medium text-gray-700 mb-3">Features</label>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-3 p-4 border border-gray-300 rounded-md bg-gray-50 max-h-48 overflow-y-auto">
+              <label 
+                v-for="feature in availableFeatures" 
+                :key="feature.id"
+                class="flex items-center space-x-2 cursor-pointer hover:bg-gray-100 p-2 rounded transition-colors"
+              >
+                <input
+                  type="checkbox"
+                  :value="feature.id"
+                  v-model="form.features"
+                  class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 focus:ring-2"
+                >
+                <span class="text-sm text-gray-700">{{ feature.label }}</span>
+              </label>
+            </div>
+            <p class="text-xs text-gray-500 mt-1">Select all applicable features for this car</p>
           </div>
 
           <div>
@@ -420,9 +430,17 @@
             </div>
           </div>
 
-          <div v-if="selectedCar.features" class="p-4 bg-gray-50 rounded-lg">
-            <h4 class="text-sm font-medium text-gray-700 mb-2">Features</h4>
-            <p class="text-gray-900">{{ selectedCar.features }}</p>
+          <div v-if="selectedCar.features && selectedCar.features.length > 0" class="p-4 bg-gray-50 rounded-lg">
+            <h4 class="text-sm font-medium text-gray-700 mb-3">Features</h4>
+            <div class="flex flex-wrap gap-2">
+              <span 
+                v-for="featureId in selectedCar.features" 
+                :key="featureId"
+                class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+              >
+                {{ getFeatureLabel(featureId) }}
+              </span>
+            </div>
           </div>
 
           <div v-if="selectedCar.notes" class="p-4 bg-gray-50 rounded-lg">
@@ -467,6 +485,30 @@ const submitting = ref(false)
 const selectedCar = ref(null)
 const rentalHistory = ref([])
 
+// Predefined car features list
+const availableFeatures = [
+  { id: 'air_conditioning', label: 'Air Conditioning' },
+  { id: 'gps_navigation', label: 'GPS Navigation' },
+  { id: 'bluetooth', label: 'Bluetooth' },
+  { id: 'backup_camera', label: 'Backup Camera' },
+  { id: 'leather_seats', label: 'Leather Seats' },
+  { id: 'sunroof', label: 'Sunroof' },
+  { id: 'heated_seats', label: 'Heated Seats' },
+  { id: 'usb_charging', label: 'USB Charging Ports' },
+  { id: 'premium_sound', label: 'Premium Sound System' },
+  { id: 'cruise_control', label: 'Cruise Control' },
+  { id: 'keyless_entry', label: 'Keyless Entry' },
+  { id: 'push_start', label: 'Push Button Start' },
+  { id: 'parking_sensors', label: 'Parking Sensors' },
+  { id: 'alloy_wheels', label: 'Alloy Wheels' },
+  { id: 'tinted_windows', label: 'Tinted Windows' },
+  { id: 'automatic_transmission', label: 'Automatic Transmission' },
+  { id: 'manual_transmission', label: 'Manual Transmission' },
+  { id: 'awd', label: 'All-Wheel Drive' },
+  { id: 'child_locks', label: 'Child Safety Locks' },
+  { id: 'abs', label: 'ABS Brakes' }
+]
+
 const statistics = reactive({
   total: 0,
   available: 0,
@@ -490,7 +532,7 @@ const form = reactive({
   daily_rate: '',
   status: 'available',
   branch_id: '',
-  features: '',
+  features: [],
   notes: ''
 })
 
@@ -574,7 +616,7 @@ const openEditModal = (car) => {
   form.daily_rate = car.daily_rate
   form.status = car.status
   form.branch_id = car.branch_id
-  form.features = car.features || ''
+  form.features = Array.isArray(car.features) ? car.features : []
   form.notes = car.notes || ''
   
   showModal.value = true
@@ -607,7 +649,7 @@ const resetForm = () => {
   form.daily_rate = ''
   form.status = 'available'
   form.branch_id = ''
-  form.features = ''
+  form.features = []
   form.notes = ''
 }
 
@@ -677,6 +719,11 @@ const formatDate = (dateString) => {
   if (!dateString) return 'N/A'
   const date = new Date(dateString)
   return date.toLocaleDateString()
+}
+
+const getFeatureLabel = (featureId) => {
+  const feature = availableFeatures.find(f => f.id === featureId)
+  return feature ? feature.label : featureId
 }
 
 const getStatusClass = (status) => {

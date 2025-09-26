@@ -231,21 +231,51 @@
             </div>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Location *</label>
-            <input v-model="form.location" type="text" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <label class="block text-sm font-medium text-gray-700 mb-1">Location Details *</label>
+            <input v-model="form.customer_location" type="text" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Detailed address or landmark" />
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Governorate *</label>
+              <select 
+                v-model="form.governorate_id"
+                @change="onGovernorateChange"
+                required
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Select Governorate</option>
+                <option v-for="gov in governorates" :key="gov.id" :value="gov.id">
+                  {{ gov.name_en }} - {{ gov.name_ar }}
+                </option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Wilayat *</label>
+              <select 
+                v-model="form.wilayat_id"
+                required
+                :disabled="!form.governorate_id"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Select Wilayat</option>
+                <option v-for="wilayat in availableWilayats" :key="wilayat.id" :value="wilayat.id">
+                  {{ wilayat.name_en }} - {{ wilayat.name_ar }}
+                </option>
+              </select>
+            </div>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Rent Start Time *</label>
-              <input v-model="form.rent_start_time" type="date" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              <label class="block text-sm font-medium text-gray-700 mb-1">Rental Start Date *</label>
+              <input v-model="form.rental_start" type="date" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" @change="updateEndTime" />
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Rent Duration (days) *</label>
               <input v-model.number="form.rent_duration" type="number" min="1" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" @input="updateEndTime" />
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Rent End Time *</label>
-              <input v-model="form.rent_end_time" type="date" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" readonly />
+              <label class="block text-sm font-medium text-gray-700 mb-1">Rental End Date *</label>
+              <input v-model="form.rental_end" type="date" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" readonly />
             </div>
           </div>
 
@@ -375,9 +405,19 @@ import axios from 'axios'
 
 const user = computed(() => useAuthStore().user)
 
+// Filter wilayats based on selected governorate
+const availableWilayats = computed(() => {
+  if (!form.governorate_id) {
+    return []
+  }
+  return wilayats.value.filter(wilayat => wilayat.governorate_id == form.governorate_id)
+})
+
 const serviceRequests = ref([])
 const cars = ref([])
 const technicians = ref([])
+const governorates = ref([])
+const wilayats = ref([])
 const loading = ref(false)
 const showModal = ref(false)
 const showViewModal = ref(false)
@@ -402,9 +442,11 @@ const filters = reactive({
 const form = reactive({
   customer_name: '',
   customer_phone: '',
-  location: '',
-  rent_start_time: '',
-  rent_end_time: '',
+  customer_location: '',
+  governorate_id: '',
+  wilayat_id: '',
+  rental_start: '',
+  rental_end: '',
   rent_duration: 1
 })
 
@@ -463,12 +505,43 @@ const fetchTechnicians = async () => {
   }
 }
 
+// Fetch governorates for service request location
+const fetchGovernorates = async () => {
+  try {
+    const response = await axios.get('/governorates', { params: { active: true } })
+    if (response.data.status === 'success') {
+      governorates.value = response.data.data || []
+    }
+  } catch (error) {
+    console.error('Error fetching governorates:', error)
+  }
+}
+
+// Fetch wilayats for service request location
+const fetchWilayats = async () => {
+  try {
+    const response = await axios.get('/wilayats', { params: { active: true } })
+    if (response.data.status === 'success') {
+      wilayats.value = response.data.data || []
+    }
+  } catch (error) {
+    console.error('Error fetching wilayats:', error)
+  }
+}
+
+// Handle governorate selection change
+const onGovernorateChange = () => {
+  form.wilayat_id = '' // Reset wilayat selection when governorate changes
+}
+
 // Modal handling
 const openCreateModal = async () => {
   isEditing.value = false
   resetForm()
   await fetchCars()
   await fetchTechnicians()
+  await fetchGovernorates()
+  await fetchWilayats()
   showModal.value = true
 }
 
@@ -477,6 +550,8 @@ const openEditModal = async (request) => {
   selectedRequest.value = request
   await fetchCars()
   await fetchTechnicians()
+  await fetchGovernorates()
+  await fetchWilayats()
   
   form.car_id = request.car_id
   form.issue_type = request.issue_type
@@ -486,6 +561,8 @@ const openEditModal = async (request) => {
   form.assignee_id = request.assignee_id || ''
   form.resolution_notes = request.resolution_notes || ''
   form.completed_at = request.completed_at ? request.completed_at.split('T')[0] : ''
+  form.governorate_id = request.governorate_id || ''
+  form.wilayat_id = request.wilayat_id || ''
   
   showModal.value = true
 }
@@ -508,20 +585,22 @@ const closeViewModal = () => {
 const resetForm = () => {
   form.customer_name = ''
   form.customer_phone = ''
-  form.location = ''
-  form.rent_start_time = ''
-  form.rent_end_time = ''
+  form.customer_location = ''
+  form.governorate_id = ''
+  form.wilayat_id = ''
+  form.rental_start = ''
+  form.rental_end = ''
   form.rent_duration = 1
 }
 
-// Auto-calculate rent end time
+// Auto-calculate rental end time
 function updateEndTime() {
-  if (form.rent_start_time && form.rent_duration > 0) {
-    const startDate = new Date(form.rent_start_time)
+  if (form.rental_start && form.rent_duration > 0) {
+    const startDate = new Date(form.rental_start)
     startDate.setDate(startDate.getDate() + Number(form.rent_duration) - 1)
-    form.rent_end_time = startDate.toISOString().split('T')[0]
+    form.rental_end = startDate.toISOString().split('T')[0]
   } else {
-    form.rent_end_time = ''
+    form.rental_end = ''
   }
 }
 

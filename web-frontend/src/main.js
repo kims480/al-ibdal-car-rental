@@ -91,6 +91,30 @@ const routes = [
       name: 'AddCustomer', 
       meta: { requiresAuth: true } 
     },
+    { 
+      path: '/car-expenses', 
+      component: () => import('./views/CarExpensesTracking.vue'), 
+      name: 'CarExpensesTracking', 
+      meta: { requiresAuth: true } 
+    },
+    { 
+      path: '/subcontractors', 
+      component: () => import('./views/Subcontractors.vue'), 
+      name: 'Subcontractors', 
+      meta: { requiresAuth: true, adminOnly: true } 
+    },
+    { 
+      path: '/governorates-wilayats', 
+      component: () => import('./views/GovernoratesWilayats.vue'), 
+      name: 'GovernoratesWilayats', 
+      meta: { requiresAuth: true, adminOnly: true } 
+    },
+    { 
+      path: '/wilayat-branch-assignments', 
+      component: () => import('./views/WilayatBranchAssignments.vue'), 
+      name: 'WilayatBranchAssignments', 
+      meta: { requiresAuth: true, adminOnly: true } 
+    },
   // Partner routes
   { 
     path: '/partner-dashboard', 

@@ -77,6 +77,30 @@
                   <span v-if="!sidebarCollapsed">Add Customer</span>
                 </RouterLink>
               </li>
+              <li>
+                <RouterLink to="/car-expenses" class="nav-item" active-class="nav-item-active">
+                  <span class="i-heroicons-chart-bar text-lg"></span>
+                  <span v-if="!sidebarCollapsed">Car Expenses</span>
+                </RouterLink>
+              </li>
+              <li v-if="user?.role === 'admin'">
+                <RouterLink to="/subcontractors" class="nav-item" active-class="nav-item-active">
+                  <span class="i-heroicons-wrench text-lg"></span>
+                  <span v-if="!sidebarCollapsed">Subcontractors</span>
+                </RouterLink>
+              </li>
+              <li v-if="user?.role === 'admin'">
+                <RouterLink to="/governorates-wilayats" class="nav-item" active-class="nav-item-active">
+                  <span class="i-heroicons-map text-lg"></span>
+                  <span v-if="!sidebarCollapsed">Governorates</span>
+                </RouterLink>
+              </li>
+              <li v-if="user?.role === 'admin'">
+                <RouterLink to="/wilayat-branch-assignments" class="nav-item" active-class="nav-item-active">
+                  <span class="i-heroicons-map-pin text-lg"></span>
+                  <span v-if="!sidebarCollapsed">Wilayat Assignments</span>
+                </RouterLink>
+              </li>
             </template>
           </ul>
         </nav>

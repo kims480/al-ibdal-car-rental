@@ -12,6 +12,9 @@ use App\Http\Controllers\Api\ContractController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\PartnerController;
 use App\Http\Controllers\Api\SubcontractorController;
+use App\Http\Controllers\Api\GovernorateController;
+use App\Http\Controllers\Api\WilayatController;
+use App\Http\Controllers\Api\WilayatBranchAssignmentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -34,8 +37,22 @@ Route::get('/branches/{id}', [BranchController::class, 'show']);
 Route::get('/branches/city/{city}', [BranchController::class, 'byCity']);
 Route::get('/cars/available', [CarController::class, 'available']);
 
+// Public governorate and wilayat information
+Route::get('/governorates', [GovernorateController::class, 'index']);
+Route::get('/governorates/{id}', [GovernorateController::class, 'show']);
+Route::get('/governorates/{id}/wilayats', [GovernorateController::class, 'wilayats']);
+Route::get('/wilayats', [WilayatController::class, 'index']);
+Route::get('/wilayats/{id}', [WilayatController::class, 'show']);
+Route::get('/wilayats/governorate/{governorateId}', [WilayatController::class, 'byGovernorate']);
+Route::get('/wilayats/{id}/assigned-branch', [WilayatController::class, 'assignedBranch']);
+
 // Protected routes (authentication required)
 Route::middleware('auth:sanctum')->group(function () {
+    // Car expenses and revenue
+    Route::get('/car-expenses', [\App\Http\Controllers\Api\CarExpenseController::class, 'index']);
+    Route::post('/car-expenses', [\App\Http\Controllers\Api\CarExpenseController::class, 'store']);
+    Route::get('/car-expenses/revenue', [\App\Http\Controllers\Api\CarExpenseController::class, 'carRevenue']);
+    Route::get('/car-expenses/total-revenue', [\App\Http\Controllers\Api\CarExpenseController::class, 'totalRevenue']);
     // Auth routes
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [AuthController::class, 'user']);
@@ -44,6 +61,28 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('service-requests', ServiceRequestController::class);
     Route::post('/service-requests/{id}/assign', [ServiceRequestController::class, 'assignToPartner']);
     Route::post('/service-requests/{id}/assign-subcontractor', [ServiceRequestController::class, 'assignToSubcontractor']);
+    
+    // Service Request Workflow routes
+    Route::post('/service-requests/{id}/review', [ServiceRequestController::class, 'reviewServiceRequest']);
+    Route::post('/service-requests/{id}/assign-to-branch', [ServiceRequestController::class, 'assignServiceRequest']);
+    Route::post('/service-requests/{id}/auto-assign', [ServiceRequestController::class, 'autoAssignServiceRequest']);
+    Route::get('/service-requests/{id}/branch-recommendations', [ServiceRequestController::class, 'getBranchRecommendations']);
+    Route::post('/service-requests/{id}/allocate-car', [ServiceRequestController::class, 'allocateCar']);
+    Route::get('/service-requests/{id}/available-cars', [ServiceRequestController::class, 'getAvailableCars']);
+    Route::post('/service-requests/bulk-allocate-cars', [ServiceRequestController::class, 'bulkAllocateCars']);
+    Route::post('/service-requests/{id}/notify-customer', [ServiceRequestController::class, 'notifyCustomer']);
+    Route::post('/service-requests/{id}/send-return-reminder', [ServiceRequestController::class, 'sendReturnReminder']);
+    Route::post('/service-requests/bulk-return-reminders', [ServiceRequestController::class, 'sendBulkReturnReminders']);
+    Route::post('/service-requests/{id}/deliver-car', [ServiceRequestController::class, 'deliverCar']);
+    Route::post('/service-requests/{id}/return-car', [ServiceRequestController::class, 'returnCar']);
+    Route::post('/service-requests/{id}/process-car-return', [ServiceRequestController::class, 'processCarReturn']);
+    Route::post('/service-requests/{id}/process-payment', [ServiceRequestController::class, 'processPayment']);
+    Route::get('/service-requests/{id}/invoice', [ServiceRequestController::class, 'getServiceRequestInvoice']);
+    Route::post('/service-requests/{id}/regenerate-invoice', [ServiceRequestController::class, 'regenerateInvoice']);
+    Route::get('/service-requests/{id}/payment-receipt', [ServiceRequestController::class, 'generatePaymentReceipt']);
+    Route::post('/service-requests/{id}/cancel', [ServiceRequestController::class, 'cancelServiceRequest']);
+    Route::get('/service-requests/pending/reviews', [ServiceRequestController::class, 'getPendingReviews']);
+    Route::get('/service-requests/workflow/stats', [ServiceRequestController::class, 'getWorkflowStats']);
 
     // Car routes
     Route::apiResource('cars', CarController::class);
@@ -86,4 +125,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/subcontractors/{id}/status', [SubcontractorController::class, 'updateStatus']);
     Route::get('/subcontractors/{id}/statistics', [SubcontractorController::class, 'statistics']);
     Route::get('/subcontractors/service/{serviceType}', [SubcontractorController::class, 'byServiceType']);
+    
+    // Governorate and Wilayat management routes (admin only)
+    Route::apiResource('governorates', GovernorateController::class)->except(['index', 'show']);
+    Route::apiResource('wilayats', WilayatController::class)->except(['index', 'show']);
+    
+    // Wilayat-Branch assignment routes (admin only)
+    Route::apiResource('wilayat-branch-assignments', WilayatBranchAssignmentController::class);
+    Route::post('/wilayat-branch-assignments/bulk-assign', [WilayatBranchAssignmentController::class, 'bulkAssign']);
+    Route::get('/wilayat-branch-assignments/unassigned/wilayats', [WilayatBranchAssignmentController::class, 'unassigned']);
 });

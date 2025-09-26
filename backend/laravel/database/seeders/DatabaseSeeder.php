@@ -13,8 +13,16 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            BranchSeeder::class,
+            // First seed basic data
             AdminUserSeeder::class,
+            BranchSeeder::class,
+            
+            // Then seed geographical data in order of dependencies
+            GovernorateSeeder::class,
+            WilayatSeeder::class,
+            
+            // Finally seed the assignments (requires branches and wilayats)
+            WilayatBranchAssignmentSeeder::class,
         ]);
     }
 }

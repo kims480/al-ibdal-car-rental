@@ -26,6 +26,7 @@ class Car extends Model
 
     protected $casts = [
         'daily_rate' => 'decimal:2',
+        'features' => 'array',
     ];
 
     // Relationships
