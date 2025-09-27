@@ -14,8 +14,8 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             // First seed basic data
-            AdminUserSeeder::class,
             BranchSeeder::class,
+            AdminUserSeeder::class,
             
             // Then seed geographical data in order of dependencies
             GovernorateSeeder::class,

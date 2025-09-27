@@ -101,10 +101,16 @@ class ServiceRequest extends Model
         return $this->belongsTo(Partner::class);
     }
 
-    public function rental()
+    public function subcontractor()
     {
-        return $this->hasOne(Rental::class);
+        return $this->belongsTo(Subcontractor::class);
     }
+
+    // Note: Rentals are now separate entities linked to customers, not service requests
+    // public function rental()
+    // {
+    //     return $this->hasOne(Rental::class);
+    // }
     
     public function invoices()
     {
@@ -138,11 +144,6 @@ class ServiceRequest extends Model
             'phone' => $this->customer_phone,
             'city' => null, // Service requests don't store city
         ];
-    }
-    
-    public function subcontractor()
-    {
-        return $this->belongsTo(Subcontractor::class);
     }
 
     public function governorate()

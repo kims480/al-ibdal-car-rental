@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\SubcontractorController;
 use App\Http\Controllers\Api\GovernorateController;
 use App\Http\Controllers\Api\WilayatController;
 use App\Http\Controllers\Api\WilayatBranchAssignmentController;
+use App\Http\Controllers\Api\DashboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -59,6 +60,11 @@ Route::get('/service-requests', [ServiceRequestController::class, 'index']);
 // Public invoices route for frontend access
 Route::get('/invoices', [InvoiceController::class, 'index']);
 Route::post('/invoices', [InvoiceController::class, 'store']);
+
+// Dashboard routes (public for now)
+Route::get('/dashboard', [DashboardController::class, 'index']);
+Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
+Route::get('/dashboard/activity', [DashboardController::class, 'recentActivity']);
 
 // Temporarily public PDF routes for testing
 Route::get('/invoices/{id}/pdf', [InvoiceController::class, 'downloadPdf']);

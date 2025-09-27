@@ -29,7 +29,7 @@ class ServiceRequestController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        $query = ServiceRequest::with(['car', 'branch', 'partner', 'subcontractor', 'rental', 'governorate', 'wilayat']);
+        $query = ServiceRequest::with(['car', 'branch', 'partner', 'subcontractor', 'governorate', 'wilayat']);
 
         // Filter by user role only if authenticated
         if ($user) {
@@ -154,7 +154,7 @@ class ServiceRequestController extends Controller
     public function show(Request $request, string $id)
     {
         $user = $request->user();
-        $serviceRequest = ServiceRequest::with(['car', 'branch', 'partner', 'subcontractor', 'rental'])->findOrFail($id);
+        $serviceRequest = ServiceRequest::with(['car', 'branch', 'partner', 'subcontractor'])->findOrFail($id);
 
         // Check authorization
         if (!$this->canViewServiceRequest($user, $serviceRequest)) {
@@ -218,7 +218,7 @@ class ServiceRequestController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Service request updated successfully',
-            'data' => $serviceRequest->load(['car', 'branch', 'partner', 'subcontractor', 'rental'])
+            'data' => $serviceRequest->load(['car', 'branch', 'partner', 'subcontractor'])
         ]);
     }
 
