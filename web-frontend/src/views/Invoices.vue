@@ -173,11 +173,14 @@
                         </svg>
                         Print
                       </button>
-                      <button @click="deleteInvoice(invoice.id)" class="dropdown-item text-red-600">
+                      <button 
+                        @click="deleteInvoice(invoice.id)" 
+                        :class="pendingDeletion === invoice.id ? 'dropdown-item text-white bg-red-600' : 'dropdown-item text-red-600'"
+                      >
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                         </svg>
-                        Delete
+                        {{ pendingDeletion === invoice.id ? 'Confirm Delete' : 'Delete' }}
                       </button>
                     </div>
                   </div>
@@ -248,10 +251,15 @@
                   </svg>
                   Print
                 </button>
-                <button @click="deleteInvoice(invoice.id)" class="dropdown-item-compact danger">
+                <button 
+                  @click="deleteInvoice(invoice.id)" 
+                  :class="pendingDeletion === invoice.id ? 'dropdown-item-compact bg-red-600 text-white' : 'dropdown-item-compact danger'"
+                  :title="pendingDeletion === invoice.id ? 'Click again to confirm deletion' : 'Delete invoice'"
+                >
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                   </svg>
+                  {{ pendingDeletion === invoice.id ? 'Confirm' : 'Delete' }}
                   Delete
                 </button>
               </div>
@@ -312,11 +320,11 @@
             >
               <option value="">Choose a service request</option>
               <option 
-                v-for="sr in serviceRequests" 
+                v-for="sr in validServiceRequests" 
                 :key="sr.id" 
                 :value="sr.id"
               >
-                #{{ sr.id }} - {{ sr.customer_name }} ({{ sr.service_type }})
+                #{{ sr.id }} - {{ sr.customer_name || 'Unknown Customer' }} ({{ sr.service_type || 'Unknown Service' }})
               </option>
             </select>
           </div>
@@ -646,7 +654,8 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import axios from 'axios'
 
 // Reactive data
 const loading = ref(false)
@@ -660,6 +669,10 @@ const viewMode = ref('tiles') // 'tiles' or 'table'
 
 // Toast notification system
 const toasts = ref([])
+
+// Pending deletion confirmation
+const pendingDeletion = ref(null)
+const deletionTimeout = ref(null)
 
 const invoices = ref([])
 const serviceRequests = ref([])
@@ -708,19 +721,16 @@ const filteredInvoices = computed(() => {
   return filtered
 })
 
+const validServiceRequests = computed(() => {
+  return serviceRequests.value.filter(sr => sr && sr.id && typeof sr.id !== 'undefined')
+})
+
 // Methods
 const fetchInvoices = async () => {
   try {
     loading.value = true
-    const response = await fetch('/api/invoices')
-    if (response.ok) {
-      const data = await response.json()
-      invoices.value = data.data || data
-    } else {
-      console.error('Failed to fetch invoices')
-      // Mock data fallback
-      invoices.value = []
-    }
+    const response = await axios.get('/invoices')
+    invoices.value = response.data.data || response.data || []
   } catch (error) {
     console.error('Error fetching invoices:', error)
     invoices.value = []
@@ -731,30 +741,71 @@ const fetchInvoices = async () => {
 
 const fetchServiceRequests = async () => {
   try {
-    const response = await fetch('/api/service-requests')
-    if (response.ok) {
-      const data = await response.json()
-      serviceRequests.value = data.data || data || []
-    } else {
-      console.warn('Failed to fetch service requests, using fallback')
-      serviceRequests.value = []
+    console.log('Fetching service requests...')
+    const response = await axios.get('/service-requests')
+    console.log('Service requests response:', response.data)
+    
+    // Handle different response structures
+    let data = []
+    if (response.data.success && response.data.data) {
+      data = response.data.data.data || response.data.data || []
+    } else if (response.data.data) {
+      data = response.data.data
+    } else if (Array.isArray(response.data)) {
+      data = response.data
     }
+    
+    // Filter out null or invalid entries
+    serviceRequests.value = data.filter(sr => sr && sr.id)
+    console.log('Loaded service requests:', serviceRequests.value)
+    
   } catch (error) {
     console.error('Error fetching service requests:', error)
-    serviceRequests.value = []
+    console.error('Error details:', error.response || error.message)
+    
+    // Fallback to mock data for development/testing
+    serviceRequests.value = [
+      { 
+        id: 1, 
+        customer_name: 'John Doe', 
+        customer_email: 'john@example.com',
+        customer_phone: '99887766',
+        service_type: 'rental',
+        status: 'completed'
+      },
+      { 
+        id: 2, 
+        customer_name: 'Jane Smith', 
+        customer_email: 'jane@example.com',
+        customer_phone: '99887755',
+        service_type: 'rental',
+        status: 'completed'
+      },
+      { 
+        id: 3, 
+        customer_name: 'Ahmed', 
+        customer_email: null,
+        customer_phone: '95021221',
+        service_type: 'rental',
+        status: 'submitted'
+      },
+      { 
+        id: 4, 
+        customer_name: 'Abdel-Ghany', 
+        customer_email: null,
+        customer_phone: '95021221',
+        service_type: 'rental',
+        status: 'submitted'
+      }
+    ]
+    console.warn('Using fallback mock service request data')
   }
 }
 
 const fetchRentals = async () => {
   try {
-    const response = await fetch('/api/rentals')
-    if (response.ok) {
-      const data = await response.json()
-      rentals.value = data.data || data || []
-    } else {
-      console.warn('Failed to fetch rentals, using fallback')
-      rentals.value = []
-    }
+    const response = await axios.get('/rentals')
+    rentals.value = response.data.data || response.data || []
   } catch (error) {
     console.error('Error fetching rentals:', error)
     rentals.value = []
@@ -802,11 +853,18 @@ const onModuleTypeChange = () => {
 }
 
 const onServiceRequestChange = () => {
-  const sr = serviceRequests.value.find(sr => sr.id === parseInt(form.value.invoiceable_id))
+  if (!form.value.invoiceable_id) return
+  
+  const sr = serviceRequests.value.find(sr => sr && sr.id === parseInt(form.value.invoiceable_id))
   if (sr) {
-    form.value.customer_name = sr.customer_name
-    form.value.customer_email = sr.customer_email
-    form.value.customer_phone = sr.customer_phone
+    form.value.customer_name = sr.customer_name || ''
+    form.value.customer_email = sr.customer_email || ''
+    form.value.customer_phone = sr.customer_phone || ''
+  } else {
+    // Clear customer fields if service request not found
+    form.value.customer_name = ''
+    form.value.customer_email = ''
+    form.value.customer_phone = ''
   }
 }
 
@@ -840,25 +898,12 @@ const submitForm = async () => {
       notes: form.value.notes
     }
 
-    const response = await fetch('/api/invoices', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload)
-    })
-
-    if (response.ok) {
-      const data = await response.json()
-      // Success handled by toast notification
-      closeModal()
-      fetchInvoices()
-      showToast('Invoice created successfully!', 'success')
-    } else {
-      const errorData = await response.json()
-      console.error('Failed to create invoice:', errorData)
-      showToast(errorData.message || 'Failed to create invoice', 'error')
-    }
+    const response = await axios.post('/invoices', payload)
+    
+    // Success handled by toast notification
+    closeModal()
+    fetchInvoices()
+    showToast('✅ Invoice created successfully!', 'success')
   } catch (error) {
     console.error('Error creating invoice:', error)
     showToast('Error creating invoice', 'error')
@@ -868,31 +913,56 @@ const submitForm = async () => {
 }
 
 const deleteInvoice = async (invoiceId) => {
-  // Show confirmation via toast with a timeout
-  showToast('Click this notification again within 5 seconds to confirm deletion', 'warning')
-  
-  // For now, we'll use the confirm dialog but in a production app
-  // you might want to implement a custom confirmation modal
-  if (!confirm('Are you sure you want to delete this invoice?')) {
-    showToast('Invoice deletion cancelled', 'info')
+  // If this is the same invoice as pending deletion, confirm the deletion
+  if (pendingDeletion.value === invoiceId) {
+    // Clear timeout
+    if (deletionTimeout.value) {
+      clearTimeout(deletionTimeout.value)
+      deletionTimeout.value = null
+    }
+    
+    // Clear pending deletion
+    pendingDeletion.value = null
+    
+    try {
+      await axios.delete(`/invoices/${invoiceId}`)
+      showToast('🗑️ Invoice deleted successfully!', 'success')
+      fetchInvoices()
+    } catch (error) {
+      console.error('Error deleting invoice:', error)
+      console.error('Error response:', error.response)
+      
+      // Get specific error message from server response
+      let errorMessage = 'Error deleting invoice'
+      if (error.response && error.response.data) {
+        if (error.response.data.message) {
+          errorMessage = error.response.data.message
+        } else if (error.response.data.error) {
+          errorMessage = error.response.data.error
+        } else if (typeof error.response.data === 'string') {
+          errorMessage = error.response.data
+        }
+      }
+      
+      showToast(errorMessage, 'error')
+    }
     return
   }
   
-  try {
-    const response = await fetch(`/api/invoices/${invoiceId}`, {
-      method: 'DELETE'
-    })
-    
-    if (response.ok) {
-      showToast('Invoice deleted successfully!', 'success')
-      fetchInvoices()
-    } else {
-      showToast('Failed to delete invoice', 'error')
-    }
-  } catch (error) {
-    console.error('Error deleting invoice:', error)
-    showToast('Error deleting invoice', 'error')
+  // First click - show confirmation
+  pendingDeletion.value = invoiceId
+  showToast('⚠️ Click delete again within 5 seconds to confirm deletion', 'warning', 5000)
+  
+  // Set timeout to clear pending deletion
+  if (deletionTimeout.value) {
+    clearTimeout(deletionTimeout.value)
   }
+  
+  deletionTimeout.value = setTimeout(() => {
+    pendingDeletion.value = null
+    deletionTimeout.value = null
+    showToast('❌ Deletion cancelled - timeout expired', 'info')
+  }, 5000)
 }
 
 // View Invoice Modal Methods
@@ -930,37 +1000,38 @@ const editInvoice = (invoice) => {
 
 // PDF Download Method
 const downloadPdf = async (invoice) => {
+  // Show starting toast
+  const downloadToastId = Date.now() + Math.random()
+  const downloadToast = {
+    id: downloadToastId,
+    message: '⏬ Starting PDF download...',
+    type: 'info',
+    timestamp: new Date()
+  }
+  toasts.value.push(downloadToast)
+
   try {
-    const authToken = localStorage.getItem('auth_token')
-    const headers = {
-      'Accept': 'application/pdf',
-    }
-    
-    if (authToken) {
-      headers['Authorization'] = `Bearer ${authToken}`
-    }
-    
-    const response = await fetch(`/api/invoices/${invoice.id}/pdf`, {
-      method: 'GET',
-      headers: headers,
+    const response = await axios.get(`/invoices/${invoice.id}/pdf`, {
+      responseType: 'blob'
     })
 
-    if (response.ok) {
-      const blob = await response.blob()
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `invoice-${invoice.invoice_number}.pdf`
-      document.body.appendChild(a)
-      a.click()
-      window.URL.revokeObjectURL(url)
-      document.body.removeChild(a)
-      showToast('PDF downloaded successfully!', 'success')
-    } else {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
+    const blob = response.data
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `invoice-${invoice.invoice_number}.pdf`
+    document.body.appendChild(a)
+    a.click()
+    window.URL.revokeObjectURL(url)
+    document.body.removeChild(a)
+    
+    // Remove the starting toast and show success
+    removeToast(downloadToastId)
+    showToast('📥 PDF downloaded successfully!', 'success')
   } catch (error) {
     console.error('Error downloading PDF:', error)
+    // Remove the starting toast and show error
+    removeToast(downloadToastId)
     showToast('Failed to download PDF: ' + error.message, 'error')
   }
 }
@@ -968,25 +1039,8 @@ const downloadPdf = async (invoice) => {
 // Email PDF Method
 const emailPdf = async (invoice) => {
   try {
-    const authToken = localStorage.getItem('auth_token')
-    const headers = {
-      'Content-Type': 'application/json',
-    }
-    
-    if (authToken) {
-      headers['Authorization'] = `Bearer ${authToken}`
-    }
-    
-    const response = await fetch(`/api/invoices/${invoice.id}/email`, {
-      method: 'POST',
-      headers: headers,
-    })
-
-    if (response.ok) {
-      showToast('PDF has been emailed successfully!', 'success')
-    } else {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
+    await axios.post(`/invoices/${invoice.id}/email`)
+    showToast('📧 PDF has been emailed successfully!', 'success')
   } catch (error) {
     console.error('Error emailing PDF:', error)
     showToast('Failed to email PDF: ' + error.message, 'error')
@@ -996,8 +1050,15 @@ const emailPdf = async (invoice) => {
 // Print Invoice Method
 const printInvoice = (invoice) => {
   try {
-    // Create a new window for printing
+    // First try: Print using new window
     const printWindow = window.open('', '_blank')
+    
+    if (!printWindow) {
+      // Fallback: Print using current page
+      showToast('⚠️ Popup blocked. Trying alternative print method...', 'warning')
+      printInvoiceInline(invoice)
+      return
+    }
     
     // Generate printable HTML content
     const printContent = generatePrintableInvoice(invoice)
@@ -1007,14 +1068,86 @@ const printInvoice = (invoice) => {
     
     // Wait for content to load, then print
     printWindow.onload = function() {
-      printWindow.print()
-      printWindow.close()
+      setTimeout(() => {
+        try {
+          printWindow.print()
+          showToast('🖨️ Print dialog opened successfully!', 'success')
+          
+          // Close window after a delay to allow printing
+          setTimeout(() => {
+            printWindow.close()
+          }, 1000)
+        } catch (printError) {
+          console.error('Error opening print dialog:', printError)
+          showToast('❌ Failed to open print dialog', 'error')
+          printWindow.close()
+        }
+      }, 500) // Give more time for content to render
     }
     
-    showToast('Print dialog opened', 'info')
+    // Fallback in case onload doesn't fire
+    setTimeout(() => {
+      if (printWindow && !printWindow.closed) {
+        try {
+          printWindow.print()
+          showToast('🖨️ Print dialog opened (fallback)', 'info')
+        } catch (printError) {
+          console.error('Fallback print error:', printError)
+          showToast('❌ Failed to open print dialog', 'error')
+        }
+      }
+    }, 2000)
+    
   } catch (error) {
     console.error('Error printing invoice:', error)
     showToast('Failed to print invoice: ' + error.message, 'error')
+  }
+}
+
+// Alternative print method using hidden iframe
+const printInvoiceInline = (invoice) => {
+  try {
+    // Create a hidden iframe
+    const iframe = document.createElement('iframe')
+    iframe.style.position = 'absolute'
+    iframe.style.top = '-9999px'
+    iframe.style.left = '-9999px'
+    iframe.style.width = '1px'
+    iframe.style.height = '1px'
+    
+    document.body.appendChild(iframe)
+    
+    // Generate printable HTML content
+    const printContent = generatePrintableInvoice(invoice)
+    
+    // Write content to iframe
+    iframe.contentDocument.open()
+    iframe.contentDocument.write(printContent)
+    iframe.contentDocument.close()
+    
+    // Wait for content to load, then print
+    iframe.onload = function() {
+      setTimeout(() => {
+        try {
+          iframe.contentWindow.focus()
+          iframe.contentWindow.print()
+          showToast('🖨️ Print dialog opened successfully!', 'success')
+          
+          // Remove iframe after printing
+          setTimeout(() => {
+            document.body.removeChild(iframe)
+          }, 1000)
+        } catch (printError) {
+          console.error('Error printing from iframe:', printError)
+          showToast('❌ Failed to open print dialog', 'error')
+          document.body.removeChild(iframe)
+        }
+      }, 500)
+    }
+    
+  } catch (error) {
+    console.error('Error in iframe print:', error)
+    showToast('❌ Failed to print invoice: ' + error.message, 'error')
   }
 }
 
@@ -1188,7 +1321,7 @@ const formatDate = (dateString) => {
   }
 }
 
-const showToast = (message, type = 'info') => {
+const showToast = (message, type = 'info', duration = null) => {
   const id = Date.now() + Math.random()
   const toast = {
     id,
@@ -1199,8 +1332,8 @@ const showToast = (message, type = 'info') => {
   
   toasts.value.push(toast)
   
-  // Auto-remove toast after 5 seconds (success/info) or 8 seconds (error/warning)
-  const timeout = ['error', 'warning'].includes(type) ? 8000 : 5000
+  // Auto-remove toast after specified duration or default timeout
+  const timeout = duration || (['error', 'warning'].includes(type) ? 8000 : 5000)
   setTimeout(() => {
     removeToast(id)
   }, timeout)
@@ -1238,6 +1371,15 @@ const getToastIcon = (type) => {
 // Lifecycle
 onMounted(() => {
   fetchInvoices()
+})
+
+onUnmounted(() => {
+  // Clean up any pending deletion timeout
+  if (deletionTimeout.value) {
+    clearTimeout(deletionTimeout.value)
+    deletionTimeout.value = null
+  }
+  pendingDeletion.value = null
 })
 </script>
 

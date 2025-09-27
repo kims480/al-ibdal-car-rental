@@ -1,5 +1,35 @@
 <template>
   <div class="dashboard-view">
+    <!-- Loading State -->
+    <div v-if="loading" class="loading-state">
+      <div class="loading-spinner"></div>
+      <p>Loading dashboard data...</p>
+    </div>
+
+    <!-- Error State -->
+    <div v-else-if="error" class="error-state">
+      <div class="error-icon">
+        <svg class="w-12 h-12 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+      </div>
+      <h3 class="error-title">Failed to load dashboard</h3>
+      <p class="error-message">{{ error }}</p>
+      <button @click="loadDashboardData" class="retry-button">Try Again</button>
+    </div>
+
+    <!-- Dashboard Content -->
+    <template v-else>
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
+      <h1 class="dashboard-title">Dashboard Overview</h1>
+      <button @click="loadDashboardData" class="refresh-button" :disabled="loading">
+        <svg class="w-4 h-4" :class="{ 'animate-spin': loading }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+        </svg>
+        {{ loading ? 'Refreshing...' : 'Refresh' }}
+      </button>
+    </div>
     <!-- Stats Overview -->
     <div class="stats-grid">
       <div class="stat-compact">
@@ -8,7 +38,7 @@
         </div>
         <div class="stat-info">
           <h3 class="stat-value">{{ stats.totalCars || 0 }}</h3>
-          <p class="stat-label">Total Cars</p>
+          <p class="stat-label">Total Cars ({{ stats.availableCars || 0 }} available)</p>
         </div>
       </div>
       
@@ -28,7 +58,7 @@
         </div>
         <div class="stat-info">
           <h3 class="stat-value">{{ stats.pendingServices || 0 }}</h3>
-          <p class="stat-label">Service Requests</p>
+          <p class="stat-label">Pending Services</p>
         </div>
       </div>
       
@@ -37,8 +67,51 @@
           <CurrencyDollarIcon class="w-5 h-5 text-white" />
         </div>
         <div class="stat-info">
-          <h3 class="stat-value">${{ stats.monthlyRevenue || 0 }}</h3>
+          <h3 class="stat-value">${{ (stats.monthlyRevenue || 0).toFixed(2) }}</h3>
           <p class="stat-label">Monthly Revenue</p>
+        </div>
+      </div>
+      
+      <!-- Additional stats row -->
+      <div class="stat-compact">
+        <div class="stat-icon bg-indigo-500">
+          <ReceiptPercentIcon class="w-5 h-5 text-white" />
+        </div>
+        <div class="stat-info">
+          <h3 class="stat-value">{{ stats.totalInvoices || 0 }}</h3>
+          <p class="stat-label">Total Invoices ({{ stats.pendingInvoices || 0 }} pending)</p>
+        </div>
+      </div>
+      
+      <div class="stat-compact">
+        <div class="stat-icon bg-emerald-500">
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+        </div>
+        <div class="stat-info">
+          <h3 class="stat-value">{{ stats.completedServices || 0 }}</h3>
+          <p class="stat-label">Completed Services</p>
+        </div>
+      </div>
+      
+      <div class="stat-compact">
+        <div class="stat-icon bg-red-500">
+          <TruckIcon class="w-5 h-5 text-white" />
+        </div>
+        <div class="stat-info">
+          <h3 class="stat-value">{{ stats.rentedCars || 0 }}</h3>
+          <p class="stat-label">Cars Currently Rented</p>
+        </div>
+      </div>
+      
+      <div class="stat-compact">
+        <div class="stat-icon bg-green-600">
+          <CurrencyDollarIcon class="w-5 h-5 text-white" />
+        </div>
+        <div class="stat-info">
+          <h3 class="stat-value">${{ (stats.totalRevenue || 0).toFixed(2) }}</h3>
+          <p class="stat-label">Total Revenue</p>
         </div>
       </div>
     </div>
@@ -112,15 +185,20 @@
             <p class="activity-title">{{ activity.title }}</p>
             <p class="activity-time">{{ formatTime(activity.created_at) }}</p>
           </div>
+          <div v-if="activity.entity_type" class="activity-badge">
+            <span :class="`badge-${activity.type}`">{{ activity.type }}</span>
+          </div>
         </div>
       </div>
     </div>
+    </template>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useAuthStore } from '../stores/auth'
+import axios from 'axios'
 import {
   TruckIcon,
   ClockIcon,
@@ -133,11 +211,23 @@ import {
 const auth = useAuthStore()
 const stats = ref({
   totalCars: 0,
+  availableCars: 0,
+  rentedCars: 0,
+  maintenanceCars: 0,
   activeRentals: 0,
   pendingServices: 0,
-  monthlyRevenue: 0
+  completedServices: 0,
+  totalServiceRequests: 0,
+  totalInvoices: 0,
+  pendingInvoices: 0,
+  sentInvoices: 0,
+  paidInvoices: 0,
+  monthlyRevenue: 0,
+  totalRevenue: 0
 })
 const recentActivities = ref([])
+const loading = ref(true)
+const error = ref(null)
 
 const user = computed(() => auth.user)
 
@@ -147,18 +237,42 @@ onMounted(() => {
 
 async function loadDashboardData() {
   try {
-    // Load stats
-    stats.value = {
-      totalCars: 24,
-      activeRentals: 8,
-      pendingServices: 3,
-      monthlyRevenue: 15200
-    }
+    loading.value = true
+    error.value = null
     
-    // Load recent activities
+    // Fetch dashboard data from API
+    const response = await axios.get('/dashboard')
+    
+    if (response.data.success) {
+      stats.value = response.data.data.stats
+      recentActivities.value = response.data.data.recent_activity || []
+    } else {
+      throw new Error(response.data.message || 'Failed to load dashboard data')
+    }
+  } catch (err) {
+    console.error('Failed to load dashboard data:', err)
+    error.value = err.message || 'Failed to load dashboard data'
+    
+    // Fallback to default values
+    stats.value = {
+      totalCars: 0,
+      availableCars: 0,
+      rentedCars: 0,
+      maintenanceCars: 0,
+      activeRentals: 0,
+      pendingServices: 0,
+      completedServices: 0,
+      totalServiceRequests: 0,
+      totalInvoices: 0,
+      pendingInvoices: 0,
+      sentInvoices: 0,
+      paidInvoices: 0,
+      monthlyRevenue: 0,
+      totalRevenue: 0
+    }
     recentActivities.value = []
-  } catch (error) {
-    console.error('Failed to load dashboard data:', error)
+  } finally {
+    loading.value = false
   }
 }
 
@@ -174,7 +288,26 @@ function getActivityIcon(type) {
 
 function formatTime(timestamp) {
   if (!timestamp) return ''
-  return new Date(timestamp).toLocaleString()
+  
+  try {
+    const date = new Date(timestamp)
+    const now = new Date()
+    const diffInMinutes = Math.floor((now - date) / (1000 * 60))
+    
+    if (diffInMinutes < 1) return 'Just now'
+    if (diffInMinutes < 60) return `${diffInMinutes}m ago`
+    
+    const diffInHours = Math.floor(diffInMinutes / 60)
+    if (diffInHours < 24) return `${diffInHours}h ago`
+    
+    const diffInDays = Math.floor(diffInHours / 24)
+    if (diffInDays < 7) return `${diffInDays}d ago`
+    
+    return date.toLocaleDateString()
+  } catch (error) {
+    console.error('Error formatting time:', error)
+    return ''
+  }
 }
 </script>
 
@@ -183,6 +316,51 @@ function formatTime(timestamp) {
   max-width: 7xl;
   margin: 0 auto;
   padding: 0;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--theme-border, #e5e7eb);
+}
+
+.dashboard-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--theme-text, #1f2937);
+  margin: 0;
+}
+
+.refresh-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--theme-primary, #3b82f6);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.refresh-button:hover:not(:disabled) {
+  background: var(--theme-primary-hover, #2563eb);
+  transform: translateY(-1px);
+}
+
+.refresh-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
 }
 
 .stats-grid {
@@ -371,6 +549,50 @@ function formatTime(timestamp) {
   margin: 0;
 }
 
+.activity-badge {
+  flex-shrink: 0;
+}
+
+.badge-rental {
+  background: #dbeafe;
+  color: #1e40af;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.badge-service {
+  background: #fef3c7;
+  color: #92400e;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.badge-invoice {
+  background: #f3e8ff;
+  color: #7c3aed;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.badge-car {
+  background: #d1fae5;
+  color: #047857;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
 /* Theme Responsiveness */
 @media (max-width: 640px) {
   .stats-grid {
@@ -385,5 +607,72 @@ function formatTime(timestamp) {
   .action-card {
     padding: 1rem;
   }
+}
+
+/* Loading and Error States */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+.loading-spinner {
+  width: 3rem;
+  height: 3rem;
+  border: 3px solid var(--theme-border, #e5e7eb);
+  border-top: 3px solid var(--theme-primary, #3b82f6);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+.error-icon {
+  margin-bottom: 1rem;
+}
+
+.error-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--theme-text, #1f2937);
+  margin: 0 0 0.5rem 0;
+}
+
+.error-message {
+  color: var(--theme-text-secondary, #6b7280);
+  margin: 0 0 2rem 0;
+  max-width: 400px;
+}
+
+.retry-button {
+  background: var(--theme-primary, #3b82f6);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.retry-button:hover {
+  background: var(--theme-primary-hover, #2563eb);
+  transform: translateY(-1px);
 }
 </style>

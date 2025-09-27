@@ -218,7 +218,7 @@
               >
                 <option value="">Select a car</option>
                 <option v-for="car in availableCars" :key="car.id" :value="car.id">
-                  {{ car.make }} {{ car.model }} ({{ car.plate_number }}) - ${{ car.daily_rate }}/day
+                  {{ car.make }} {{ car.model }} ({{ car.registration || car.plate_number }}) - ${{ car.daily_rate }}/day
                 </option>
               </select>
             </div>
@@ -502,6 +502,7 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
+import axios from 'axios'
 
 // Simple fallback for toast
 const showToast = (message, type = 'info') => {
@@ -550,7 +551,10 @@ const tomorrow = computed(() => {
 
 const availableCars = computed(() => {
   // Filter cars based on availability
-  return cars.value.filter(car => car && car.status === 'available')
+  const filtered = cars.value.filter(car => car && car.status === 'available')
+  console.log('All cars:', cars.value)
+  console.log('Available cars (filtered):', filtered)
+  return filtered
 })
 
 const validRentals = computed(() => {
@@ -569,17 +573,8 @@ const fetchRentals = async () => {
       }
     })
     
-    const response = await fetch(`/api/rentals?${params}`)
-    if (!response.ok) throw new Error('Failed to fetch rentals')
-    
-    const data = await response.json()
-    let rentalData = []
-    
-    if (data.success) {
-      rentalData = Array.isArray(data.data) ? data.data : []
-    } else {
-      throw new Error(data.message || 'Failed to fetch rentals')
-    }
+    const response = await axios.get(`/rentals?${params}`)
+    let rentalData = Array.isArray(response.data.data) ? response.data.data : []
     
     // Ensure we have an array and valid rental objects
     rentals.value = rentalData.map(rental => {
@@ -627,15 +622,8 @@ const fetchRentals = async () => {
 
 const fetchCustomers = async () => {
   try {
-    const response = await fetch('/api/customers')
-    if (!response.ok) throw new Error('Failed to fetch customers')
-    const data = await response.json()
-    
-    if (data.success) {
-      customers.value = Array.isArray(data.data) ? data.data : []
-    } else {
-      throw new Error(data.message || 'Failed to fetch customers')
-    }
+    const response = await axios.get('/customers')
+    customers.value = Array.isArray(response.data.data) ? response.data.data : []
   } catch (error) {
     console.error('Error fetching customers:', error)
     customers.value = []
@@ -651,17 +639,33 @@ const fetchCustomers = async () => {
 
 const fetchCars = async () => {
   try {
-    const response = await fetch('/api/cars')
-    if (!response.ok) throw new Error('Failed to fetch cars')
-    const data = await response.json()
+    console.log('Starting to fetch cars...')
+    const response = await axios.get('/cars')
+    console.log('Cars API response:', response)
+    console.log('Response data:', response.data)
     
-    if (data.success) {
-      cars.value = Array.isArray(data.data) ? data.data : []
+    if (response.data && response.data.success && response.data.data && response.data.data.data) {
+      // Handle paginated response structure
+      cars.value = Array.isArray(response.data.data.data) ? response.data.data.data : []
+      console.log('Cars loaded from API:', cars.value)
+    } else if (response.data && response.data.data) {
+      // Handle simple array response structure
+      cars.value = Array.isArray(response.data.data) ? response.data.data : []
+      console.log('Cars loaded from API (simple):', cars.value)
     } else {
-      throw new Error(data.message || 'Failed to fetch cars')
+      console.log('No valid data in response, using fallback')
+      cars.value = []
+      
+      // Fallback to mock data for development/testing
+      cars.value = [
+        { id: 1, make: 'Toyota', model: 'Camry', plate_number: 'ABC-123', status: 'available', daily_rate: 50 },
+        { id: 2, make: 'Honda', model: 'Accord', plate_number: 'DEF-456', status: 'available', daily_rate: 45 }
+      ]
+      console.warn('Using fallback mock car data')
     }
   } catch (error) {
     console.error('Error fetching cars:', error)
+    console.error('Error details:', error.response || error.message)
     cars.value = []
     
     // Fallback to mock data for development/testing
@@ -718,25 +722,11 @@ const saveRental = async () => {
   try {
     saving.value = true
     
-    const url = isEditing.value ? `/api/rentals/${form.value.id}` : '/api/rentals'
-    const method = isEditing.value ? 'PUT' : 'POST'
-    
-    const response = await fetch(url, {
-      method,
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(form.value)
-    })
-    
-    if (!response.ok) {
-      const errorData = await response.json()
-      throw new Error(errorData.message || 'Failed to save rental')
-    }
-    
-    const data = await response.json()
-    if (!data.success) {
-      throw new Error(data.message || 'Failed to save rental')
+    let response
+    if (isEditing.value) {
+      response = await axios.put(`/rentals/${form.value.id}`, form.value)
+    } else {
+      response = await axios.post('/rentals', form.value)
     }
     
     if (typeof showToast === 'function') {
@@ -785,19 +775,7 @@ const deleteRental = async (rentalId) => {
   if (!confirm('Are you sure you want to delete this rental?')) return
   
   try {
-    const response = await fetch(`/api/rentals/${rentalId}`, {
-      method: 'DELETE'
-    })
-    
-    if (!response.ok) {
-      const errorData = await response.json()
-      throw new Error(errorData.message || 'Failed to delete rental')
-    }
-    
-    const data = await response.json()
-    if (!data.success) {
-      throw new Error(data.message || 'Failed to delete rental')
-    }
+    await axios.delete(`/rentals/${rentalId}`)
     
     if (typeof showToast === 'function') {
       showToast('Rental deleted successfully', 'success')

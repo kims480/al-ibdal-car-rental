@@ -14,16 +14,16 @@
               <div class="header-icon">
                 <WrenchScrewdriverIcon class="w-4 h-4" />
               </div>
-              <h1 class="text-lg sm:text-xl font-bold text-gray-900">Service Requests</h1>
+              <h1 class="text-lg sm:text-xl font-bold text-gray-900">Rental Requests</h1>
             </div>
-            <p class="text-sm text-gray-600">Manage maintenance and service tickets efficiently</p>
+            <p class="text-sm text-gray-600">Manage car rental requests and assignments efficiently</p>
           </div>
           <button 
             @click="openCreateModal"
             class="create-btn flex items-center gap-1 px-3 py-2 rounded-lg font-medium transition-all duration-300"
           >
             <PlusIcon class="w-4 h-4" />
-            New Request
+            New Rental Request
           </button>
         </div>
       </div>
@@ -252,6 +252,7 @@
                   <div class="customer-info">
                     <div class="customer-name">{{ request.customer?.name || request.customer_name || 'N/A' }}</div>
                     <div class="customer-phone">{{ request.customer?.phone || request.customer_phone || 'N/A' }}</div>
+                    <div v-if="request.customer?.email || request.customer_email" class="customer-email text-xs text-gray-500">{{ request.customer?.email || request.customer_email }}</div>
                   </div>
                 </td>
                 <td class="table-cell">
@@ -323,8 +324,11 @@
       <div class="relative top-20 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white">
         <div class="mb-4">
           <h3 class="text-lg font-bold text-gray-900">
-            {{ isEditing ? 'Edit Service Request' : 'Create New Service Request' }}
+            {{ isEditing ? 'Edit Rental Request' : 'Create New Rental Request' }}
           </h3>
+          <p class="text-sm text-gray-600 mb-2">
+            Submit a rental request. Once submitted, it will be automatically assigned to the appropriate branch based on your location.
+          </p>
         </div>
 
         <form @submit.prevent="submitForm" class="space-y-4">
@@ -338,9 +342,15 @@
               <input v-model="form.customer_phone" type="tel" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
           </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Location Details *</label>
-            <input v-model="form.customer_location" type="text" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Detailed address or landmark" />
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Customer Email</label>
+              <input v-model="form.customer_email" type="email" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="customer@example.com" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Location Details *</label>
+              <input v-model="form.customer_location" type="text" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Detailed address or landmark" />
+            </div>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -374,49 +384,79 @@
           </div>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Service Type *</label>
-              <select v-model="form.service_type" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <option value="">Select Service Type</option>
-                <option value="maintenance">Maintenance</option>
-                <option value="repair">Repair</option>
-                <option value="inspection">Inspection</option>
-                <option value="cleaning">Cleaning</option>
-                <option value="towing">Towing</option>
-                <option value="other">Other</option>
-              </select>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Contact Phone *</label>
+              <input 
+                v-model="form.customer_phone" 
+                type="tel" 
+                required 
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="+968 XXXX XXXX"
+              />
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Priority *</label>
-              <select v-model="form.priority" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <option value="">Select Priority</option>
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-                <option value="critical">Critical</option>
-              </select>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Number of Rent Days *</label>
+              <input 
+                v-model.number="form.rent_days" 
+                type="number" 
+                min="1" 
+                required 
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter number of days"
+              />
             </div>
           </div>
           
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Vehicle *</label>
-              <select v-model="form.car_id" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <option value="">Select Vehicle</option>
-                <option v-for="car in cars" :key="car.id" :value="car.id">
-                  {{ car.make }} {{ car.model }} - {{ car.license_plate }}
-                </option>
-              </select>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Pickup Date *</label>
+              <input 
+                v-model="form.pickup_date" 
+                type="date" 
+                required 
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Assign Technician</label>
-              <select v-model="form.technician_id" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <option value="">Select Technician</option>
-                <option v-for="tech in technicians" :key="tech.id" :value="tech.id">
-                  {{ tech.name }} - {{ tech.role }}
-                </option>
-              </select>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Return Date</label>
+              <input 
+                v-model="form.return_date" 
+                type="date" 
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                :readonly="form.rent_days > 0"
+              />
+              <p class="text-xs text-gray-500 mt-1">Auto-calculated based on rent days</p>
             </div>
           </div>
+
+          <!-- Branch Assignment Section -->
+          <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <h4 class="text-sm font-semibold text-blue-800 mb-2">Branch Assignment</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Assigned Branch</label>
+                <select 
+                  v-model="form.assigned_branch_id" 
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Auto-assign based on Wilayat</option>
+                  <option v-for="branch in branches" :key="branch.id" :value="branch.id">
+                    {{ branch.name }} - {{ branch.city }}
+                  </option>
+                </select>
+                <p class="text-xs text-gray-500 mt-1">Leave empty for automatic assignment</p>
+              </div>
+              <div v-if="suggestedBranch">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Suggested Branch</label>
+                <div class="p-2 bg-green-50 border border-green-200 rounded">
+                  <p class="text-green-800 font-medium">{{ suggestedBranch.name }}</p>
+                  <p class="text-green-600 text-xs">{{ suggestedBranch.city }} - {{ suggestedBranch.address }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Note: Service Type, Priority, Vehicle, Technician, and Estimated Cost are removed from initial form -->
+          <!-- These will be added after branch assignment -->
           
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Service Description *</label>
@@ -425,19 +465,8 @@
               required 
               rows="4"
               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Describe the service needed, issues encountered, or specific requirements..."
+              placeholder="Describe your rental requirements, specific car preferences, or any special requests..."
             ></textarea>
-          </div>
-          
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Scheduled Date</label>
-              <input v-model="form.scheduled_date" type="datetime-local" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Estimated Cost (OMR)</label>
-              <input v-model.number="form.estimated_cost" type="number" step="0.01" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="0.00" />
-            </div>
           </div>
 
           <div class="flex justify-end space-x-3 pt-4">
@@ -453,7 +482,7 @@
               :disabled="submitting"
               class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors disabled:opacity-50"
             >
-              {{ submitting ? 'Saving...' : (isEditing ? 'Update Request' : 'Submit Request') }}
+              {{ submitting ? 'Saving...' : (isEditing ? 'Update Rental Request' : 'Submit Rental Request') }}
             </button>
           </div>
         </form>
@@ -587,7 +616,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { toast } from '../composables/useToast'
 import { useAuthStore } from '../stores/auth'
 import CRUDTableSkeleton from '../components/CRUDTableSkeleton.vue'
@@ -617,19 +646,13 @@ import axios from 'axios'
 
 const user = computed(() => useAuthStore().user)
 
-// Filter wilayats based on selected governorate
-const availableWilayats = computed(() => {
-  if (!form.governorate_id) {
-    return []
-  }
-  return wilayats.value.filter(wilayat => wilayat.governorate_id == form.governorate_id)
-})
-
+// Reactive data declarations first
 const serviceRequests = ref([])
 const cars = ref([])
 const technicians = ref([])
 const governorates = ref([])
 const wilayats = ref([])
+const branches = ref([])
 const loading = ref(false)
 const initialLoading = ref(true)
 const showModal = ref(false)
@@ -657,16 +680,67 @@ const filters = reactive({
 const form = reactive({
   customer_name: '',
   customer_phone: '',
+  customer_email: '',
   customer_location: '',
   governorate_id: '',
   wilayat_id: '',
-  service_type: '',
-  priority: '',
-  car_id: '',
-  technician_id: '',
-  description: '',
-  scheduled_date: '',
-  estimated_cost: 0
+  rent_days: 1,
+  pickup_date: '',
+  return_date: '',
+  assigned_branch_id: '',
+  description: ''
+  // Removed: service_type, priority, car_id, technician_id, estimated_cost, scheduled_date
+})
+
+// Filter wilayats based on selected governorate
+const availableWilayats = computed(() => {
+  if (!form.governorate_id) {
+    return []
+  }
+  return wilayats.value.filter(wilayat => wilayat.governorate_id == form.governorate_id)
+})
+
+// Get suggested branch based on selected wilayat
+const suggestedBranch = computed(() => {
+  if (!form.wilayat_id) {
+    return null
+  }
+  // Find branch assignment for the wilayat
+  const wilayat = wilayats.value.find(w => w.id == form.wilayat_id)
+  if (wilayat && wilayat.branch) {
+    return wilayat.branch
+  }
+  // Fallback to closest branch based on governorate
+  const governorate = governorates.value.find(g => g.id == form.governorate_id)
+  if (governorate) {
+    return branches.value.find(b => b.governorate_id == governorate.id) || branches.value[0]
+  }
+  return null
+})
+
+// Auto-calculate return date based on rent days and pickup date
+const autoCalculateReturnDate = () => {
+  if (form.pickup_date && form.rent_days > 0) {
+    const pickupDate = new Date(form.pickup_date)
+    const returnDate = new Date(pickupDate)
+    returnDate.setDate(pickupDate.getDate() + parseInt(form.rent_days))
+    form.return_date = returnDate.toISOString().split('T')[0]
+  }
+}
+
+// Watch for changes in pickup date or rent days
+watch([() => form.pickup_date, () => form.rent_days], () => {
+  autoCalculateReturnDate()
+})
+
+// Auto-assign branch when wilayat changes
+watch(() => form.wilayat_id, (newWilayatId) => {
+  if (newWilayatId && !form.assigned_branch_id) {
+    const suggested = suggestedBranch.value
+    if (suggested) {
+      form.assigned_branch_id = suggested.id
+    }
+  }
 })
 
 // Reset filters
@@ -757,6 +831,18 @@ const fetchWilayats = async () => {
   }
 }
 
+// Fetch branches for assignment
+const fetchBranches = async () => {
+  try {
+    const response = await axios.get('/branches', { params: { active: true } })
+    if (response.data.status === 'success') {
+      branches.value = response.data.data || []
+    }
+  } catch (error) {
+    console.error('Error fetching branches:', error)
+  }
+}
+
 // Handle governorate selection change
 const onGovernorateChange = () => {
   form.wilayat_id = '' // Reset wilayat selection when governorate changes
@@ -795,6 +881,7 @@ const openEditModal = async (request) => {
   // Map Service Request specific fields
   form.customer_name = request.customer_name || request.customer?.name || ''
   form.customer_phone = request.customer_phone || request.customer?.phone || ''
+  form.customer_email = request.customer_email || request.customer?.email || ''
   form.customer_location = request.customer_location || ''
   form.service_type = request.service_type || request.issue_type || ''
   form.technician_id = request.technician_id || request.assignee_id || ''
@@ -832,23 +919,39 @@ const closeWorkflowModal = () => {
 const resetForm = () => {
   form.customer_name = ''
   form.customer_phone = ''
+  form.customer_email = ''
   form.customer_location = ''
   form.governorate_id = ''
   form.wilayat_id = ''
-  form.service_type = ''
-  form.priority = ''
-  form.car_id = ''
-  form.technician_id = ''
+  form.rent_days = 1
+  form.pickup_date = ''
+  form.return_date = ''
+  form.assigned_branch_id = ''
   form.description = ''
-  form.scheduled_date = ''
-  form.estimated_cost = 0
+  // Removed fields: service_type, priority, car_id, technician_id, estimated_cost, scheduled_date
 }
 
 // Form submission
 const submitForm = async () => {
   submitting.value = true
   try {
-    const data = { ...form }
+    // Basic validation
+    if (!form.customer_name || !form.customer_phone || !form.pickup_date || !form.return_date) {
+      toast.error('Please fill in all required fields')
+      submitting.value = false
+      return
+    }
+    
+    // Map frontend fields to backend expected fields
+    const data = { 
+      ...form,
+      rental_start: form.pickup_date,
+      rental_end: form.return_date
+    }
+    // Remove frontend-specific fields that backend doesn't expect
+    delete data.pickup_date
+    delete data.return_date
+    
     let response
     if (isEditing.value) {
       response = await axios.put(`/service-requests/${selectedRequest.value.id}`, data)
@@ -982,17 +1085,39 @@ const truncateText = (text, maxLength) => {
 onMounted(async () => {
   // Start all API calls in parallel for better performance  
   try {
-    const [serviceRequestsPromise, carsPromise, techniciansPromise] = await Promise.all([
+    const promises = [
       fetchServiceRequests(),
       fetchCars(),
-      fetchTechnicians()
-    ])
+      fetchTechnicians(),
+      fetchGovernoratesAndWilayats(),
+      fetchBranches()
+    ]
+    await Promise.all(promises)
   } catch (error) {
     console.error('Error loading initial data:', error)
   } finally {
     initialLoading.value = false
   }
 })
+
+// Combined fetch function for governorates and wilayats
+const fetchGovernoratesAndWilayats = async () => {
+  await Promise.all([
+    fetchGovernoratesData(),
+    fetchWilayats()
+  ])
+}
+
+const fetchGovernoratesData = async () => {
+  try {
+    const response = await axios.get('/governorates', { params: { active: true } })
+    if (response.data.status === 'success') {
+      governorates.value = response.data.data || []
+    }
+  } catch (error) {
+    console.error('Error fetching governorates:', error)
+  }
+}
 </script>
 
 <style scoped>

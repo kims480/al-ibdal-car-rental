@@ -143,111 +143,124 @@
         </div>
         
         <!-- Header Actions -->
-        <div class="flex items-center space-x-2">
+        <div class="flex items-center space-x-1">
           <!-- Theme Switcher -->
           <div class="relative">
             <button 
               @click="showThemeDropdown = !showThemeDropdown"
-              class="flex items-center p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              class="nav-control-btn"
               title="Change Theme"
             >
-              <svg class="w-5 h-5 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zM21 5a2 2 0 00-2-2h-4a2 2 0 00-2 2v12a4 4 0 004 4h4a2 2 0 002-2V5z"></path>
               </svg>
             </button>
             
             <!-- Theme Dropdown -->
-            <div v-if="showThemeDropdown" class="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50">
-              <div class="p-3">
-                <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-3 px-1">Choose Theme</p>
-                <div class="space-y-2">
-                  <button 
-                    v-for="themeOption in themes" 
-                    :key="themeOption.value"
-                    @click="selectTheme(themeOption.value)"
-                    :class="['w-full text-left p-3 rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-between border', 
-                      theme === themeOption.value 
-                        ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-sm' 
-                        : 'border-gray-200 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 dark:border-gray-600']"
-                  >
-                    <div class="flex flex-col">
-                      <span class="font-semibold">{{ themeOption.label }}</span>
-                      <span class="text-xs opacity-75">{{ themeOption.colors }}</span>
+            <div v-if="showThemeDropdown" class="material-dropdown theme-dropdown">
+              <div class="dropdown-header">
+                <h3 class="dropdown-title">Choose Theme</h3>
+                <p class="dropdown-subtitle">Personalize your dashboard experience</p>
+              </div>
+              
+              <div class="theme-options">
+                <button 
+                  v-for="themeOption in themes" 
+                  :key="themeOption.value"
+                  @click="selectTheme(themeOption.value)"
+                  :class="['theme-option-btn', { 'active': theme === themeOption.value }]"
+                >
+                  <div class="theme-preview-mini" :data-theme="themeOption.value">
+                    <div class="mini-header"></div>
+                    <div class="mini-content">
+                      <div class="mini-bar"></div>
+                      <div class="mini-bar short"></div>
                     </div>
-                    <svg v-if="theme === themeOption.value" class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  </div>
+                  <div class="theme-info">
+                    <span class="theme-name">{{ themeOption.label }}</span>
+                    <span class="theme-desc">{{ themeOption.colors }}</span>
+                  </div>
+                  <div v-if="theme === themeOption.value" class="theme-check">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                     </svg>
-                  </button>
-                </div>
-                <p class="text-xs text-gray-400 mt-3 px-1">Themes affect colors, backgrounds, and visual mood</p>
+                  </div>
+                </button>
               </div>
             </div>
           </div>
           
           <!-- Notifications -->
-          <button class="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-            <BellIcon class="w-5 h-5 text-gray-600 dark:text-gray-300" />
-            <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+          <button class="nav-control-btn relative" title="Notifications">
+            <BellIcon class="w-5 h-5" />
+            <span class="notification-badge">3</span>
           </button>
           
           <!-- User Profile Dropdown -->
           <div class="relative">
             <button 
               @click="showUserDropdown = !showUserDropdown"
-              class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              class="user-profile-btn"
             >
-              <div class="w-8 h-8 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center text-white text-sm font-bold">
+              <div class="user-avatar">
                 {{ user?.name?.charAt(0)?.toUpperCase() }}
               </div>
-              <div class="hidden sm:block text-left">
-                <p class="text-sm font-medium text-gray-900 dark:text-white">{{ user?.name }}</p>
-                <p class="text-xs text-gray-500 dark:text-gray-400 capitalize">{{ user?.role }}</p>
+              <div class="hidden sm:block user-info">
+                <p class="user-name">{{ user?.name }}</p>
+                <p class="user-role">{{ user?.role }}</p>
               </div>
-              <ChevronDownIcon class="w-4 h-4 text-gray-400" />
+              <ChevronDownIcon class="w-4 h-4 chevron-icon" />
             </button>
             
             <!-- User Dropdown -->
-            <div v-if="showUserDropdown" class="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50">
-              <div class="p-3 border-b border-gray-200 dark:border-gray-700">
-                <div class="flex items-center space-x-3">
-                  <div class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center text-white text-lg font-bold">
-                    {{ user?.name?.charAt(0)?.toUpperCase() }}
-                  </div>
-                  <div class="flex-1 min-w-0">
-                    <p class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ user?.name }}</p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 truncate capitalize">{{ user?.role }}</p>
-                    <p class="text-xs text-gray-400 dark:text-gray-500 truncate">{{ user?.email }}</p>
-                  </div>
+            <div v-if="showUserDropdown" class="material-dropdown user-dropdown">
+              <div class="dropdown-user-header">
+                <div class="user-avatar-large">
+                  {{ user?.name?.charAt(0)?.toUpperCase() }}
+                </div>
+                <div class="user-details">
+                  <p class="user-name-large">{{ user?.name }}</p>
+                  <p class="user-role-large">{{ user?.role }}</p>
+                  <p class="user-email">{{ user?.email }}</p>
                 </div>
               </div>
               
-              <div class="p-2">
+              <div class="dropdown-divider"></div>
+              
+              <div class="dropdown-menu">
                 <RouterLink 
                   to="/profile" 
                   @click="showUserDropdown = false"
-                  class="flex items-center w-full px-3 py-2 text-sm text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                  class="dropdown-item"
                 >
-                  <UserIcon class="w-4 h-4 mr-3" />
-                  View Profile
+                  <div class="item-icon">
+                    <UserIcon class="w-4 h-4" />
+                  </div>
+                  <span class="item-text">View Profile</span>
                 </RouterLink>
                 
                 <RouterLink 
                   to="/settings" 
                   @click="showUserDropdown = false"
-                  class="flex items-center w-full px-3 py-2 text-sm text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                  class="dropdown-item"
                 >
-                  <CogIcon class="w-4 h-4 mr-3" />
-                  Settings
+                  <div class="item-icon">
+                    <CogIcon class="w-4 h-4" />
+                  </div>
+                  <span class="item-text">Settings</span>
                 </RouterLink>
                 
-                <hr class="my-2 border-gray-200 dark:border-gray-600" />
+                <div class="dropdown-divider"></div>
                 
                 <button 
                   @click="logout"
-                  class="flex items-center w-full px-3 py-2 text-sm text-red-600 dark:text-red-400 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                  class="dropdown-item danger"
                 >
-                  <ArrowRightOnRectangleIcon class="w-4 h-4 mr-3" />
-                  Sign out
+                  <div class="item-icon">
+                    <ArrowRightOnRectangleIcon class="w-4 h-4" />
+                  </div>
+                  <span class="item-text">Sign Out</span>
                 </button>
               </div>
             </div>
@@ -704,5 +717,506 @@ a:hover {
 /* === BACKDROP BLUR ENHANCEMENT === */
 .backdrop-blur-sm {
   backdrop-filter: blur(6px);
+}
+
+/* ============================================
+   🎨 MATERIAL DESIGN NAVBAR CONTROLS
+   ============================================ */
+
+/* === NAVIGATION CONTROL BUTTONS === */
+.nav-control-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--theme-card, rgba(255, 255, 255, 0.8));
+  border: 1px solid var(--theme-border, rgba(229, 231, 235, 0.5));
+  color: var(--theme-text-secondary, #6b7280);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.nav-control-btn:hover {
+  background: var(--theme-primary-50, #eff6ff);
+  color: var(--theme-primary-600, #2563eb);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.nav-control-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* === NOTIFICATION BADGE === */
+.notification-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 18px;
+  height: 18px;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  border-radius: 50%;
+  font-size: 10px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--theme-bg, white);
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+  animation: pulse-notification 2s infinite;
+}
+
+@keyframes pulse-notification {
+  0%, 100% { 
+    transform: scale(1); 
+  }
+  50% { 
+    transform: scale(1.1); 
+  }
+}
+
+/* === USER PROFILE BUTTON === */
+.user-profile-btn {
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  gap: 8px;
+  border-radius: 20px;
+  background: var(--theme-card, rgba(255, 255, 255, 0.8));
+  border: 1px solid var(--theme-border, rgba(229, 231, 235, 0.5));
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.user-profile-btn:hover {
+  background: var(--theme-primary-50, #eff6ff);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--theme-primary-500, #3b82f6), var(--theme-secondary-500, #8b5cf6));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.user-info {
+  text-align: left;
+  margin-right: 4px;
+}
+
+.user-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--theme-text, #1f2937);
+  line-height: 1.2;
+  margin: 0;
+}
+
+.user-role {
+  font-size: 11px;
+  color: var(--theme-text-secondary, #6b7280);
+  text-transform: capitalize;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.chevron-icon {
+  color: var(--theme-text-secondary, #6b7280);
+  transition: transform 0.2s ease;
+}
+
+.user-profile-btn:hover .chevron-icon {
+  transform: rotate(180deg);
+}
+
+/* === MATERIAL DESIGN DROPDOWNS === */
+.material-dropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  min-width: 280px;
+  background: var(--theme-card, white);
+  border: 1px solid var(--theme-border, #e5e7eb);
+  border-radius: 12px;
+  box-shadow: 
+    0 10px 25px rgba(0, 0, 0, 0.15),
+    0 4px 12px rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(12px);
+  z-index: 50;
+  overflow: hidden;
+  transform: scale(0.95) translateY(-10px);
+  opacity: 0;
+  animation: dropdown-appear 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes dropdown-appear {
+  to {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+.dropdown-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--theme-border, #f3f4f6);
+  background: linear-gradient(135deg, var(--theme-primary-50, #eff6ff) 0%, var(--theme-secondary-50, #faf5ff) 100%);
+}
+
+.dropdown-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--theme-text, #1f2937);
+  margin: 0 0 4px 0;
+}
+
+.dropdown-subtitle {
+  font-size: 12px;
+  color: var(--theme-text-secondary, #6b7280);
+  margin: 0;
+}
+
+/* === THEME DROPDOWN SPECIFIC === */
+.theme-dropdown {
+  width: 320px;
+}
+
+.theme-options {
+  padding: 12px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.theme-option-btn {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 8px;
+  border: 2px solid var(--theme-border, #e5e7eb);
+  border-radius: 8px;
+  background: var(--theme-surface, white);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.theme-option-btn:last-child {
+  margin-bottom: 0;
+}
+
+.theme-option-btn:hover {
+  border-color: var(--theme-primary-300, #93c5fd);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.theme-option-btn.active {
+  border-color: var(--theme-primary-500, #3b82f6);
+  background: linear-gradient(135deg, var(--theme-primary-50, #eff6ff) 0%, var(--theme-secondary-50, #faf5ff) 100%);
+  box-shadow: 0 4px 12px var(--theme-primary-200, rgba(59, 130, 246, 0.3));
+}
+
+.theme-preview-mini {
+  width: 40px;
+  height: 32px;
+  border-radius: 6px;
+  margin-right: 12px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--theme-border, #e5e7eb);
+  flex-shrink: 0;
+}
+
+/* Theme Preview Colors */
+.theme-preview-mini[data-theme="ocean-breeze"] { background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 50%, #e0f2fe 100%); }
+.theme-preview-mini[data-theme="cherry-blossom"] { background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 50%, #faf5ff 100%); }
+.theme-preview-mini[data-theme="golden-sunset"] { background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 50%, #fed7aa 100%); }
+.theme-preview-mini[data-theme="dark-blue-neon"] { background: linear-gradient(135deg, #0a0f1c 0%, #1a1f2e 50%, #2a2f3e 100%); }
+
+.mini-header {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.8);
+  margin: 2px;
+  border-radius: 2px;
+}
+
+.theme-preview-mini[data-theme="dark-blue-neon"] .mini-header {
+  background: rgba(42, 47, 62, 0.8);
+}
+
+.mini-content {
+  position: absolute;
+  bottom: 2px;
+  left: 2px;
+  right: 2px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mini-bar {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 2px;
+}
+
+.mini-bar.short {
+  width: 60%;
+}
+
+.theme-preview-mini[data-theme="dark-blue-neon"] .mini-bar {
+  background: rgba(42, 47, 62, 0.6);
+}
+
+.theme-info {
+  flex: 1;
+  text-align: left;
+}
+
+.theme-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--theme-text, #1f2937);
+  margin: 0 0 2px 0;
+}
+
+.theme-desc {
+  font-size: 12px;
+  color: var(--theme-text-secondary, #6b7280);
+  margin: 0;
+}
+
+.theme-check {
+  width: 20px;
+  height: 20px;
+  background: var(--theme-primary-500, #3b82f6);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* === USER DROPDOWN SPECIFIC === */
+.user-dropdown {
+  width: 280px;
+}
+
+.dropdown-user-header {
+  padding: 20px;
+  background: linear-gradient(135deg, var(--theme-primary-50, #eff6ff) 0%, var(--theme-secondary-50, #faf5ff) 100%);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.user-avatar-large {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--theme-primary-500, #3b82f6), var(--theme-secondary-500, #8b5cf6));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 18px;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  flex-shrink: 0;
+}
+
+.user-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.user-name-large {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--theme-text, #1f2937);
+  margin: 0 0 2px 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-role-large {
+  font-size: 12px;
+  color: var(--theme-text-secondary, #6b7280);
+  text-transform: capitalize;
+  margin: 0 0 4px 0;
+}
+
+.user-email {
+  font-size: 11px;
+  color: var(--theme-text-secondary, #9ca3af);
+  margin: 0;
+  word-break: break-all;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background: var(--theme-border, #e5e7eb);
+  margin: 0;
+}
+
+.dropdown-menu {
+  padding: 8px;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.dropdown-item:hover {
+  background: var(--theme-primary-50, #eff6ff);
+  transform: translateX(4px);
+}
+
+.dropdown-item.danger {
+  color: #dc2626;
+}
+
+.dropdown-item.danger:hover {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.item-icon {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  color: var(--theme-text-secondary, #6b7280);
+  flex-shrink: 0;
+}
+
+.dropdown-item.danger .item-icon {
+  color: inherit;
+}
+
+.item-text {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--theme-text, #1f2937);
+}
+
+.dropdown-item.danger .item-text {
+  color: inherit;
+}
+
+/* === RIPPLE EFFECT === */
+.nav-control-btn::after,
+.user-profile-btn::after,
+.theme-option-btn::after,
+.dropdown-item::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  transform: translate(-50%, -50%);
+  transition: width 0.3s ease, height 0.3s ease;
+}
+
+.nav-control-btn:active::after,
+.user-profile-btn:active::after,
+.theme-option-btn:active::after,
+.dropdown-item:active::after {
+  width: 200px;
+  height: 200px;
+}
+
+/* === DARK BLUE NEON THEME OVERRIDES === */
+[data-theme="dark-blue-neon"] .nav-control-btn {
+  background: rgba(42, 47, 62, 0.8);
+  border-color: rgba(51, 65, 85, 0.8);
+  color: #94a3b8;
+}
+
+[data-theme="dark-blue-neon"] .nav-control-btn:hover {
+  background: rgba(0, 212, 255, 0.1);
+  color: #00d4ff;
+  box-shadow: 0 4px 20px rgba(0, 212, 255, 0.2);
+}
+
+[data-theme="dark-blue-neon"] .user-profile-btn {
+  background: rgba(42, 47, 62, 0.8);
+  border-color: rgba(51, 65, 85, 0.8);
+}
+
+[data-theme="dark-blue-neon"] .user-profile-btn:hover {
+  background: rgba(0, 212, 255, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 212, 255, 0.2);
+}
+
+[data-theme="dark-blue-neon"] .material-dropdown {
+  background: rgba(26, 31, 46, 0.95);
+  border-color: rgba(51, 65, 85, 0.8);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="dark-blue-neon"] .dropdown-header {
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, rgba(124, 58, 237, 0.1) 100%);
+  border-color: rgba(51, 65, 85, 0.8);
+}
+
+[data-theme="dark-blue-neon"] .theme-option-btn {
+  background: rgba(42, 47, 62, 0.8);
+  border-color: rgba(51, 65, 85, 0.8);
+}
+
+[data-theme="dark-blue-neon"] .theme-option-btn:hover {
+  border-color: rgba(0, 212, 255, 0.5);
+  box-shadow: 0 4px 20px rgba(0, 212, 255, 0.2);
+}
+
+[data-theme="dark-blue-neon"] .theme-option-btn.active {
+  border-color: #00d4ff;
+  background: rgba(0, 212, 255, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 212, 255, 0.3);
+}
+
+[data-theme="dark-blue-neon"] .dropdown-item:hover {
+  background: rgba(0, 212, 255, 0.1);
+}
+
+[data-theme="dark-blue-neon"] .dropdown-user-header {
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, rgba(124, 58, 237, 0.1) 100%);
 }
 </style>
