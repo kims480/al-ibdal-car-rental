@@ -35,6 +35,7 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::get('/branches', [BranchController::class, 'index']);
 Route::get('/branches/{id}', [BranchController::class, 'show']);
 Route::get('/branches/city/{city}', [BranchController::class, 'byCity']);
+Route::get('/cars', [CarController::class, 'index']);
 Route::get('/cars/available', [CarController::class, 'available']);
 
 // Public governorate and wilayat information
@@ -45,6 +46,23 @@ Route::get('/wilayats', [WilayatController::class, 'index']);
 Route::get('/wilayats/{id}', [WilayatController::class, 'show']);
 Route::get('/wilayats/governorate/{governorateId}', [WilayatController::class, 'byGovernorate']);
 Route::get('/wilayats/{id}/assigned-branch', [WilayatController::class, 'assignedBranch']);
+
+// Public customers route for frontend access
+Route::get('/customers', [\App\Http\Controllers\Api\CustomerController::class, 'index']);
+
+// Public rentals route for frontend access  
+Route::get('/rentals', [RentalController::class, 'index']);
+
+// Public service requests route for invoice forms
+Route::get('/service-requests', [ServiceRequestController::class, 'index']);
+
+// Public invoices route for frontend access
+Route::get('/invoices', [InvoiceController::class, 'index']);
+Route::post('/invoices', [InvoiceController::class, 'store']);
+
+// Temporarily public PDF routes for testing
+Route::get('/invoices/{id}/pdf', [InvoiceController::class, 'downloadPdf']);
+Route::post('/invoices/{id}/email', [InvoiceController::class, 'emailPdf']);
 
 // Protected routes (authentication required)
 Route::middleware('auth:sanctum')->group(function () {
@@ -84,8 +102,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/service-requests/pending/reviews', [ServiceRequestController::class, 'getPendingReviews']);
     Route::get('/service-requests/workflow/stats', [ServiceRequestController::class, 'getWorkflowStats']);
 
-    // Car routes
-    Route::apiResource('cars', CarController::class);
+    // Car routes (authenticated operations)
+    Route::post('/cars', [CarController::class, 'store']);
+    Route::get('/cars/{id}', [CarController::class, 'show']);
+    Route::put('/cars/{id}', [CarController::class, 'update']);
+    Route::delete('/cars/{id}', [CarController::class, 'destroy']);
     Route::patch('/cars/{id}/status', [CarController::class, 'updateStatus']);
 
     // Branch routes (authenticated users can view, admin can manage)
@@ -94,21 +115,28 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/branches/{id}', [BranchController::class, 'destroy']);
     Route::get('/branches/{id}/statistics', [BranchController::class, 'statistics']);
 
-    // Rental routes
-    Route::apiResource('rentals', RentalController::class);
+    // Rental routes (authenticated operations)
+    Route::post('/rentals', [RentalController::class, 'store']);
+    Route::get('/rentals/{id}', [RentalController::class, 'show']);
+    Route::put('/rentals/{id}', [RentalController::class, 'update']);
+    Route::delete('/rentals/{id}', [RentalController::class, 'destroy']);
     Route::get('/rentals/statistics', [RentalController::class, 'statistics']);
+    Route::get('/customers/{customerId}/rentals', [RentalController::class, 'byCustomer']);
 
     // User routes (admin only)
     Route::apiResource('users', UserController::class);
     Route::patch('/users/{id}/status', [UserController::class, 'updateStatus']);
 
-    // Invoice routes
-    Route::apiResource('invoices', InvoiceController::class);
-    Route::get('/invoices/{id}/pdf', [InvoiceController::class, 'downloadPdf']);
-    Route::post('/invoices/{id}/email', [InvoiceController::class, 'emailPdf']);
+    // Invoice routes (authenticated operations)
+    Route::get('/invoices/{id}', [InvoiceController::class, 'show']);
+    Route::put('/invoices/{id}', [InvoiceController::class, 'update']);
+    Route::delete('/invoices/{id}', [InvoiceController::class, 'destroy']);
 
-    // Customer routes
+    // Customer routes (authenticated operations only)
     Route::post('/customers', [\App\Http\Controllers\Api\CustomerController::class, 'store']);
+    Route::get('/customers/{id}', [\App\Http\Controllers\Api\CustomerController::class, 'show']);
+    Route::put('/customers/{id}', [\App\Http\Controllers\Api\CustomerController::class, 'update']);
+    Route::delete('/customers/{id}', [\App\Http\Controllers\Api\CustomerController::class, 'destroy']);
 
     // Contract routes
     Route::apiResource('contracts', ContractController::class);

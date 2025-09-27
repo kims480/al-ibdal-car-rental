@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CRUD Performance Test</title>
+    <script>
+        async function measureAPICall(endpoint, description) {
+            const startTime = performance.now();
+            try {
+                const response = await fetch(`http://localhost:8000/api${endpoint}`, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                    }
+                });
+                const endTime = performance.now();
+                const duration = endTime - startTime;
+                
+                console.log(`${description}: ${duration.toFixed(2)}ms - Status: ${response.status}`);
+                return { duration, status: response.status, success: response.ok };
+            } catch (error) {
+                const endTime = performance.now();
+                const duration = endTime - startTime;
+                console.log(`${description}: ${duration.toFixed(2)}ms - Error: ${error.message}`);
+                return { duration, error: error.message };
+            }
+        }
+
+        async function simulateCRUDFormLoading() {
+            console.log('=== Simulating Cars.vue Loading Pattern ===');
+            
+            // Simulate what Cars.vue does - two API calls simultaneously
+            const startTime = performance.now();
+            
+            const [carsResult, branchesResult] = await Promise.all([
+                measureAPICall('/cars', 'Cars API'),
+                measureAPICall('/branches', 'Branches API')
+            ]);
+            
+            const totalTime = performance.now() - startTime;
+            console.log(`Total parallel loading time: ${totalTime.toFixed(2)}ms`);
+            
+            // Now test sequential loading
+            console.log('\n=== Testing Sequential Loading ===');
+            const sequentialStart = performance.now();
+            const cars2 = await measureAPICall('/cars', 'Cars API (Sequential)');
+            const branches2 = await measureAPICall('/branches', 'Branches API (Sequential)');
+            const sequentialTotal = performance.now() - sequentialStart;
+            console.log(`Total sequential loading time: ${sequentialTotal.toFixed(2)}ms`);
+            
+            // Test other endpoints
+            console.log('\n=== Testing Other CRUD Endpoints ===');
+            await measureAPICall('/users', 'Users API (needs auth)');
+            await measureAPICall('/service-requests', 'Service Requests API (needs auth)');
+        }
+
+        window.onload = () => {
+            document.getElementById('test-btn').onclick = simulateCRUDFormLoading;
+        };
+    </script>
+</head>
+<body>
+    <h1>CRUD Forms Performance Test</h1>
+    <button id="test-btn">Run Performance Test</button>
+    <p>Open browser console to see results</p>
+    <div>
+        <h2>Expected Issues:</h2>
+        <ul>
+            <li>Multiple API calls in onMounted() hooks causing delays</li>
+            <li>No progressive loading states</li>
+            <li>Authentication required for most endpoints</li>
+            <li>No caching of frequently requested data (branches)</li>
+        </ul>
+    </div>
+</body>
+</html>

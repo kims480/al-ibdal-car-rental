@@ -1,9 +1,12 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import { createRouter, createWebHistory } from 'vue-router'
+import { installToast } from './composables/useToast.js'
+import ToastNotification from './components/ToastNotification.vue'
 const UserProfile = () => import('./views/UserProfile.vue')
 import 'virtual:uno.css'
 import './style.css'
+import './assets/themes.css' // Import global theme system
 import App from './App.vue'
 
 // Import views
@@ -23,9 +26,6 @@ const Invoices = () => import('./views/Invoices.vue')
 const PartnerDashboard = () => import('./views/PartnerDashboard.vue')
 const PartnerServiceRequest = () => import('./views/PartnerServiceRequest.vue')
 const PartnerServiceRequestForm = () => import('./views/PartnerServiceRequestForm.vue')
-
-// Import components
-import AppFooter from './components/AppFooter.vue'
 
 // Router configuration
 const routes = [
@@ -86,9 +86,9 @@ const routes = [
       meta: { requiresAuth: true }
     },
     { 
-      path: '/customers/add', 
-      component: () => import('./views/AddCustomer.vue'), 
-      name: 'AddCustomer', 
+      path: '/customers', 
+      component: () => import('./views/Customers.vue'), 
+      name: 'Customers', 
       meta: { requiresAuth: true } 
     },
     { 
@@ -177,4 +177,11 @@ const pinia = createPinia()
 
 app.use(pinia)
 app.use(router)
+
+// Install toast system globally
+installToast(app)
+
+// Register global components
+app.component('ToastNotification', ToastNotification)
+
 app.mount('#app')

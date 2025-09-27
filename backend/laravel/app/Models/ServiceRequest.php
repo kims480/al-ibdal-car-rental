@@ -12,6 +12,7 @@ class ServiceRequest extends Model
     protected $fillable = [
         'customer_name',
         'customer_phone',
+        'customer_email',
         'customer_location',
         'governorate_id',
         'wilayat_id',
@@ -103,6 +104,40 @@ class ServiceRequest extends Model
     public function rental()
     {
         return $this->hasOne(Rental::class);
+    }
+    
+    public function invoices()
+    {
+        return $this->morphMany(Invoice::class, 'invoiceable');
+    }
+    
+    public function user()
+    {
+        // Try to find a user by phone or email from service request data
+        if ($this->customer_phone) {
+            $user = User::where('phone', $this->customer_phone)->first();
+            if ($user) return $user;
+        }
+        
+        if ($this->customer_email) {
+            $user = User::where('email', $this->customer_email)->first();
+            if ($user) return $user;
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Get customer-like data for service request
+     */
+    public function getCustomerDataAttribute()
+    {
+        return (object) [
+            'name' => $this->customer_name,
+            'email' => $this->customer_email,
+            'phone' => $this->customer_phone,
+            'city' => null, // Service requests don't store city
+        ];
     }
     
     public function subcontractor()

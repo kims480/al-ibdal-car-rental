@@ -13,7 +13,18 @@ return new class extends Migration
     {
         Schema::create('invoices', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('service_request_id');
+            $table->string('invoice_number')->unique();
+            $table->decimal('amount', 10, 2);
+            $table->decimal('tax_amount', 10, 2)->default(0);
+            $table->decimal('discount_amount', 10, 2)->default(0);
+            $table->decimal('total_amount', 10, 2);
+            $table->text('notes')->nullable();
+            $table->enum('status', ['pending', 'sent', 'paid', 'cancelled'])->default('pending');
+            $table->unsignedBigInteger('issued_by');
             $table->timestamps();
+            
+            // Foreign keys will be added later when the referenced tables exist
         });
     }
 

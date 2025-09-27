@@ -1,0 +1,8 @@
+{
+  "invoiceable_type": "rental",
+  "invoiceable_id": 1,
+  "amount": 250.00,
+  "tax_amount": 25.00,
+  "discount_amount": 0,
+  "notes": "Rental invoice test"
+}

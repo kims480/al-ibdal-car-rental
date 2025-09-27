@@ -17,11 +17,13 @@ class CarController extends Controller
         $user = $request->user();
         $query = Car::with('branch');
 
-        // Filter by user role
-        if ($user->isBranchManager() && $user->branch_id) {
-            $query->where('branch_id', $user->branch_id);
-        } elseif ($user->isPartner() && $user->branch_id) {
-            $query->where('branch_id', $user->branch_id);
+        // Filter by user role if authenticated
+        if ($user) {
+            if ($user->isBranchManager() && $user->branch_id) {
+                $query->where('branch_id', $user->branch_id);
+            } elseif ($user->isPartner() && $user->branch_id) {
+                $query->where('branch_id', $user->branch_id);
+            }
         }
 
         // Apply filters

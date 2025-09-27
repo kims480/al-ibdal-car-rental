@@ -1,38 +1,43 @@
 <template>
-  <div class="p-6">
-    <div class="flex justify-between items-center mb-6">
-      <div>
-        <h1 class="text-3xl font-bold text-gray-900">Car Inventory</h1>
-        <p class="text-gray-600 mt-1">Manage car fleet and availability</p>
+  <div class="p-3">
+    <!-- Loading skeleton -->
+    <CRUDTableSkeleton v-if="initialLoading" :showStats="true" />
+    
+    <!-- Main content -->
+    <div v-else>
+      <div class="flex justify-between items-center mb-3">
+        <div>
+          <h1 class="text-xl font-bold text-gray-900">Car Inventory</h1>
+          <p class="text-sm text-gray-600 mt-1">Manage car fleet and availability</p>
+        </div>
+        <button 
+          @click="openCreateModal"
+          class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-md flex items-center gap-1 transition-colors"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+          </svg>
+          New Car
+        </button>
       </div>
-      <button 
-        @click="openCreateModal"
-        class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg flex items-center gap-2 transition-colors"
-      >
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-        </svg>
-        New Car
-      </button>
-    </div>
 
     <!-- Filters -->
-    <div class="bg-white rounded-lg shadow-sm border mb-6 p-4">
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div class="bg-white rounded-md shadow-sm border mb-3 p-3">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Search</label>
+          <label class="block text-xs font-medium text-gray-700 mb-1">Search</label>
           <input 
             v-model="filters.search"
-            type="text" 
+            type="text"
             placeholder="Make, model, plate..."
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="w-full px-2 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm"
           >
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+          <label class="block text-xs font-medium text-gray-700 mb-1">Status</label>
           <select 
             v-model="filters.status"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="w-full px-2 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm"
           >
             <option value="">All Statuses</option>
             <option value="available">Available</option>
@@ -42,7 +47,7 @@
           </select>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Branch</label>
+          <label class="block text-xs font-medium text-gray-700 mb-1">Branch</label>
           <select 
             v-model="filters.branch_id"
             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -65,32 +70,32 @@
     </div>
 
     <!-- Stats Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-      <div class="bg-white rounded-lg shadow-sm border p-4 flex items-center">
-        <div class="rounded-full bg-blue-100 p-3 mr-4">
-          <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-2 mb-3">
+      <div class="bg-white rounded-md shadow-sm border p-2 flex items-center">
+        <div class="rounded-full bg-blue-100 p-2 mr-2">
+          <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
           </svg>
         </div>
         <div>
-          <p class="text-sm text-gray-600">Total Cars</p>
-          <p class="text-xl font-bold">{{ statistics.total }}</p>
+          <p class="text-xs text-gray-600">Total Cars</p>
+          <p class="text-sm font-bold">{{ statistics.total }}</p>
         </div>
       </div>
-      <div class="bg-white rounded-lg shadow-sm border p-4 flex items-center">
-        <div class="rounded-full bg-green-100 p-3 mr-4">
-          <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div class="bg-white rounded-md shadow-sm border p-2 flex items-center">
+        <div class="rounded-full bg-green-100 p-2 mr-2">
+          <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
           </svg>
         </div>
         <div>
-          <p class="text-sm text-gray-600">Available</p>
-          <p class="text-xl font-bold">{{ statistics.available }}</p>
+          <p class="text-xs text-gray-600">Available</p>
+          <p class="text-sm font-bold">{{ statistics.available }}</p>
         </div>
       </div>
-      <div class="bg-white rounded-lg shadow-sm border p-4 flex items-center">
-        <div class="rounded-full bg-yellow-100 p-3 mr-4">
-          <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div class="bg-white rounded-md shadow-sm border p-2 flex items-center">
+        <div class="rounded-full bg-yellow-100 p-2 mr-2">
+          <svg class="w-4 h-4 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
           </svg>
         </div>
@@ -107,20 +112,20 @@
         </div>
         <div>
           <p class="text-sm text-gray-600">Maintenance</p>
-          <p class="text-xl font-bold">{{ statistics.maintenance }}</p>
+          <p class="text-sm font-bold">{{ statistics.maintenance }}</p>
         </div>
       </div>
     </div>
 
     <!-- Cars Table -->
-    <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
-      <div v-if="loading" class="p-8 text-center">
-        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-        <p class="text-gray-600 mt-2">Loading cars...</p>
+    <div class="bg-white rounded-md shadow-sm border overflow-hidden">
+      <div v-if="loading" class="p-4 text-center">
+        <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
+        <p class="text-sm text-gray-600 mt-2">Loading cars...</p>
       </div>
 
-      <div v-else-if="cars.length === 0" class="p-8 text-center text-gray-500">
-        <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div v-else-if="cars.length === 0" class="p-4 text-center text-gray-500">
+        <svg class="w-12 h-12 mx-auto text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
         </svg>
         <p>No cars found</p>
@@ -465,19 +470,25 @@
         </div>
       </div>
     </div>
-  </div>
+    </div> <!-- Close main content div -->
+  </div> <!-- Close container div -->
 </template>
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
+import { toast } from '../composables/useToast'
 import { useAuthStore } from '../stores/auth'
+import { useAPICache } from '../composables/useAPICache'
+import CRUDTableSkeleton from '../components/CRUDTableSkeleton.vue'
 import axios from 'axios'
 
 const user = computed(() => useAuthStore().user)
+const { fetchBranches, getBranches, isBranchesLoading } = useAPICache()
 
 const cars = ref([])
-const branches = ref([])
+const branches = computed(() => getBranches.value)
 const loading = ref(false)
+const initialLoading = ref(true)
 const showModal = ref(false)
 const showViewModal = ref(false)
 const isEditing = ref(false)
@@ -564,18 +575,6 @@ const updateStatistics = () => {
   statistics.available = cars.value.filter(car => car.status === 'available').length
   statistics.rented = cars.value.filter(car => car.status === 'rented').length
   statistics.maintenance = cars.value.filter(car => car.status === 'maintenance').length
-}
-
-// Fetch branches for filtering and assignment
-const fetchBranches = async () => {
-  try {
-    const response = await axios.get('/branches')
-    if (response.data.success) {
-      branches.value = response.data.data.data || response.data.data
-    }
-  } catch (error) {
-    console.error('Error fetching branches:', error)
-  }
 }
 
 // Fetch rental history for a specific car
@@ -683,11 +682,11 @@ const submitForm = async () => {
     if (response.data.success) {
       closeModal()
       fetchCars()
-      alert(isEditing.value ? 'Car updated successfully!' : 'Car added successfully!')
+      toast.success(isEditing.value ? 'Car updated successfully!' : 'Car added successfully!')
     }
   } catch (error) {
     console.error('Error saving car:', error)
-    alert(error.response?.data?.message || 'Failed to save car')
+    toast.error(error.response?.data?.message || 'Failed to save car')
   } finally {
     submitting.value = false
   }
@@ -706,11 +705,11 @@ const deleteCar = async (car) => {
     
     if (response.data.success) {
       fetchCars()
-      alert('Car deleted successfully!')
+      toast.success('Car deleted successfully!')
     }
   } catch (error) {
     console.error('Error deleting car:', error)
-    alert(error.response?.data?.message || 'Failed to delete car. The car might be in use.')
+    toast.error(error.response?.data?.message || 'Failed to delete car. The car might be in use.')
   }
 }
 
@@ -745,8 +744,17 @@ const formatStatus = (status) => {
   return status.charAt(0).toUpperCase() + status.slice(1)
 }
 
-onMounted(() => {
-  fetchCars()
-  fetchBranches()
+onMounted(async () => {
+  // Start both API calls in parallel for better performance
+  try {
+    const [carsPromise, branchesPromise] = await Promise.all([
+      fetchCars(),
+      fetchBranches()
+    ])
+  } catch (error) {
+    console.error('Error loading initial data:', error)
+  } finally {
+    initialLoading.value = false
+  }
 })
 </script>

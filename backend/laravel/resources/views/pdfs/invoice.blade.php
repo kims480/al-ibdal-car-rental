@@ -155,71 +155,174 @@
                 <span class="status status-{{ $invoice->status }}">{{ ucfirst($invoice->status) }}</span>
             </div>
             <div class="info-row">
-                <span class="label">Service Request:</span>
-                #{{ $invoice->serviceRequest->id }}
+                <span class="label">Type:</span>
+                @if($invoice->invoiceable instanceof App\Models\Rental)
+                    Car Rental
+                @elseif($invoice->invoiceable instanceof App\Models\ServiceRequest)
+                    Service Request
+                @elseif($invoice->serviceRequest)
+                    Service Request (Legacy)
+                @else
+                    General Invoice
+                @endif
             </div>
+            @if($invoice->invoiceable)
+                <div class="info-row">
+                    <span class="label">Reference ID:</span>
+                    #{{ $invoice->invoiceable->id }}
+                </div>
+            @elseif($invoice->serviceRequest)
+                <div class="info-row">
+                    <span class="label">Service Request:</span>
+                    #{{ $invoice->serviceRequest->id }}
+                </div>
+            @endif
         </div>
         
         <div class="customer-details">
             <h3>Customer Details</h3>
-            <div class="info-row">
-                <span class="label">Name:</span>
-                {{ $invoice->serviceRequest->customer_name }}
-            </div>
-            <div class="info-row">
-                <span class="label">Phone:</span>
-                {{ $invoice->serviceRequest->customer_phone }}
-            </div>
-            <div class="info-row">
-                <span class="label">Email:</span>
-                {{ $invoice->serviceRequest->email }}
-            </div>
-            <div class="info-row">
-                <span class="label">City:</span>
-                {{ $invoice->serviceRequest->customer_city }}
-            </div>
+            @if($invoice->invoiceable instanceof App\Models\Rental)
+                {{-- Rental customer details --}}
+                <div class="info-row">
+                    <span class="label">Name:</span>
+                    {{ $invoice->invoiceable->customer->name ?? 'N/A' }}
+                </div>
+                <div class="info-row">
+                    <span class="label">Phone:</span>
+                    {{ $invoice->invoiceable->customer->phone ?? 'N/A' }}
+                </div>
+                <div class="info-row">
+                    <span class="label">Email:</span>
+                    {{ $invoice->invoiceable->customer->email ?? 'N/A' }}
+                </div>
+            @elseif($invoice->invoiceable instanceof App\Models\ServiceRequest)
+                {{-- Service Request customer details --}}
+                <div class="info-row">
+                    <span class="label">Name:</span>
+                    {{ $invoice->invoiceable->customer_name ?? 'N/A' }}
+                </div>
+                <div class="info-row">
+                    <span class="label">Phone:</span>
+                    {{ $invoice->invoiceable->customer_phone ?? 'N/A' }}
+                </div>
+                <div class="info-row">
+                    <span class="label">Email:</span>
+                    {{ $invoice->invoiceable->customer_email ?? 'N/A' }}
+                </div>
+                <div class="info-row">
+                    <span class="label">City:</span>
+                    {{ $invoice->invoiceable->customer_city ?? 'N/A' }}
+                </div>
+            @elseif($invoice->serviceRequest)
+                {{-- Legacy service request customer details --}}
+                <div class="info-row">
+                    <span class="label">Name:</span>
+                    {{ $invoice->serviceRequest->customer_name }}
+                </div>
+                <div class="info-row">
+                    <span class="label">Phone:</span>
+                    {{ $invoice->serviceRequest->customer_phone }}
+                </div>
+                <div class="info-row">
+                    <span class="label">Email:</span>
+                    {{ $invoice->serviceRequest->email }}
+                </div>
+                <div class="info-row">
+                    <span class="label">City:</span>
+                    {{ $invoice->serviceRequest->customer_city }}
+                </div>
+            @else
+                <div class="info-row">Customer information not available</div>
+            @endif
         </div>
     </div>
 
-    <div class="rental-details">
-        <h3>Rental Details</h3>
-        <table class="rental-table">
-            <thead>
-                <tr>
-                    <th>Vehicle</th>
-                    <th>Branch</th>
-                    <th>Start Date</th>
-                    <th>End Date</th>
-                    <th>Duration</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>
-                        @if($invoice->serviceRequest->car)
-                            {{ $invoice->serviceRequest->car->make }} {{ $invoice->serviceRequest->car->model }}<br>
-                            <small>{{ $invoice->serviceRequest->car->year }} - {{ $invoice->serviceRequest->car->license_plate }}</small>
-                        @else
-                            Vehicle not assigned
-                        @endif
-                    </td>
-                    <td>
-                        @if($invoice->serviceRequest->branch)
-                            {{ $invoice->serviceRequest->branch->name }}<br>
-                            <small>{{ $invoice->serviceRequest->branch->contact_phone }}</small>
-                        @else
-                            Branch not assigned
-                        @endif
-                    </td>
-                    <td>{{ \Carbon\Carbon::parse($invoice->serviceRequest->start_date)->format('d/m/Y') }}</td>
-                    <td>{{ \Carbon\Carbon::parse($invoice->serviceRequest->end_date)->format('d/m/Y') }}</td>
-                    <td>
-                        {{ \Carbon\Carbon::parse($invoice->serviceRequest->start_date)->diffInDays(\Carbon\Carbon::parse($invoice->serviceRequest->end_date)) + 1 }} day(s)
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+    @if($invoice->invoiceable instanceof App\Models\Rental)
+        {{-- Rental details table --}}
+        <div class="rental-details">
+            <h3>Rental Details</h3>
+            <table class="rental-table">
+                <thead>
+                    <tr>
+                        <th>Vehicle</th>
+                        <th>Branch</th>
+                        <th>Pickup Date</th>
+                        <th>Return Date</th>
+                        <th>Duration</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            @if($invoice->invoiceable->car)
+                                {{ $invoice->invoiceable->car->make }} {{ $invoice->invoiceable->car->model }}<br>
+                                <small>{{ $invoice->invoiceable->car->year }} - {{ $invoice->invoiceable->car->registration ?? $invoice->invoiceable->car->license_plate }}</small>
+                            @else
+                                Vehicle not assigned
+                            @endif
+                        </td>
+                        <td>
+                            @if($invoice->invoiceable->car && $invoice->invoiceable->car->branch)
+                                {{ $invoice->invoiceable->car->branch->name }}<br>
+                                <small>{{ $invoice->invoiceable->car->branch->contact_phone }}</small>
+                            @else
+                                Branch not assigned
+                            @endif
+                        </td>
+                        <td>{{ \Carbon\Carbon::parse($invoice->invoiceable->pickup_date)->format('d/m/Y') }}</td>
+                        <td>{{ \Carbon\Carbon::parse($invoice->invoiceable->return_date)->format('d/m/Y') }}</td>
+                        <td>
+                            {{ \Carbon\Carbon::parse($invoice->invoiceable->pickup_date)->diffInDays(\Carbon\Carbon::parse($invoice->invoiceable->return_date)) + 1 }} day(s)
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    @elseif($invoice->invoiceable instanceof App\Models\ServiceRequest || $invoice->serviceRequest)
+        {{-- Service Request details table --}}
+        @php
+            $serviceRequest = $invoice->invoiceable instanceof App\Models\ServiceRequest ? $invoice->invoiceable : $invoice->serviceRequest;
+        @endphp
+        <div class="rental-details">
+            <h3>Service Request Details</h3>
+            <table class="rental-table">
+                <thead>
+                    <tr>
+                        <th>Vehicle</th>
+                        <th>Branch</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <th>Duration</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            @if($serviceRequest->car)
+                                {{ $serviceRequest->car->make }} {{ $serviceRequest->car->model }}<br>
+                                <small>{{ $serviceRequest->car->year }} - {{ $serviceRequest->car->registration ?? $serviceRequest->car->license_plate }}</small>
+                            @else
+                                Vehicle not assigned
+                            @endif
+                        </td>
+                        <td>
+                            @if($serviceRequest->branch)
+                                {{ $serviceRequest->branch->name }}<br>
+                                <small>{{ $serviceRequest->branch->contact_phone }}</small>
+                            @else
+                                Branch not assigned
+                            @endif
+                        </td>
+                        <td>{{ \Carbon\Carbon::parse($serviceRequest->start_date)->format('d/m/Y') }}</td>
+                        <td>{{ \Carbon\Carbon::parse($serviceRequest->end_date)->format('d/m/Y') }}</td>
+                        <td>
+                            {{ \Carbon\Carbon::parse($serviceRequest->start_date)->diffInDays(\Carbon\Carbon::parse($serviceRequest->end_date)) + 1 }} day(s)
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    @endif
 
     <div class="amount-breakdown">
         <table class="breakdown-table">

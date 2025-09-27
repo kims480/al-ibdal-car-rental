@@ -31,13 +31,15 @@ class ServiceRequestController extends Controller
         $user = $request->user();
         $query = ServiceRequest::with(['car', 'branch', 'partner', 'subcontractor', 'rental', 'governorate', 'wilayat']);
 
-        // Filter by user role
-        if ($user->isBranchManager() && $user->branch_id) {
-            $query->where('branch_id', $user->branch_id);
-        } elseif ($user->isPartner() && $user->branch_id) {
-            $query->where('branch_id', $user->branch_id);
-        } elseif ($user->isCustomer()) {
-            $query->where('customer_phone', $user->phone);
+        // Filter by user role only if authenticated
+        if ($user) {
+            if (method_exists($user, 'isBranchManager') && $user->isBranchManager() && $user->branch_id) {
+                $query->where('branch_id', $user->branch_id);
+            } elseif (method_exists($user, 'isPartner') && $user->isPartner() && $user->branch_id) {
+                $query->where('branch_id', $user->branch_id);
+            } elseif (method_exists($user, 'isCustomer') && $user->isCustomer()) {
+                $query->where('customer_phone', $user->phone);
+            }
         }
 
         // Apply additional filters

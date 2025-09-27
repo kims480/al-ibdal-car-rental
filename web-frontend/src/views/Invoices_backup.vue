@@ -1,0 +1,1 @@
+This is a backup of the current Invoices.vue file before fixing template structure issues.

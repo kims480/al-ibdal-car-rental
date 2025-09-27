@@ -34,6 +34,9 @@ onMounted(() => {
         <RouterView />
       </DashboardLayout>
     </template>
+    
+    <!-- Global Toast Notifications -->
+    <ToastNotification />
   </div>
 </template>
 

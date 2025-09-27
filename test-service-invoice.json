@@ -1,0 +1,8 @@
+{
+  "invoiceable_type": "service_request", 
+  "invoiceable_id": 1,
+  "amount": 300.00,
+  "tax_amount": 30.00,
+  "discount_amount": 5.00,
+  "notes": "Service request invoice test"
+}

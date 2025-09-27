@@ -1,25 +1,25 @@
 <template>
-  <div class="p-6">
-    <div class="flex justify-between items-center mb-6">
+  <div class="p-3">
+    <div class="flex justify-between items-center mb-3">
       <div>
-        <h1 class="text-3xl font-bold text-gray-900">Wilayat-Branch Assignments</h1>
-        <p class="text-gray-600 mt-1">Assign wilayats to service branches for automatic routing</p>
+        <h1 class="text-xl font-bold text-gray-900">Wilayat-Branch Assignments</h1>
+        <p class="text-gray-600 mt-1 text-sm">Assign wilayats to service branches for automatic routing</p>
       </div>
-      <div class="flex gap-3">
+      <div class="flex gap-2">
         <button 
           @click="openBulkAssignModal"
-          class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+          class="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors text-sm"
         >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
           </svg>
           Bulk Assign
         </button>
         <button 
           @click="openAssignmentModal"
-          class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+          class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors text-sm"
         >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
           </svg>
           New Assignment
@@ -28,72 +28,72 @@
     </div>
 
     <!-- Stats Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-      <div class="bg-white p-6 rounded-lg shadow-sm border">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-3">
+      <div class="bg-white p-3 rounded-lg shadow-sm border">
         <div class="flex items-center">
-          <div class="p-2 bg-blue-100 rounded-md">
-            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div class="p-1.5 bg-blue-100 rounded-md">
+            <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
             </svg>
           </div>
-          <div class="ml-4">
-            <p class="text-sm font-medium text-gray-600">Total Assignments</p>
-            <p class="text-2xl font-semibold text-gray-900">{{ assignments.length }}</p>
+          <div class="ml-3">
+            <p class="text-xs font-medium text-gray-600">Total Assignments</p>
+            <p class="text-lg font-semibold text-gray-900">{{ assignments.length }}</p>
           </div>
         </div>
       </div>
-      <div class="bg-white p-6 rounded-lg shadow-sm border">
+      <div class="bg-white p-3 rounded-lg shadow-sm border">
         <div class="flex items-center">
-          <div class="p-2 bg-green-100 rounded-md">
-            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div class="p-1.5 bg-green-100 rounded-md">
+            <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
           </div>
-          <div class="ml-4">
-            <p class="text-sm font-medium text-gray-600">Assigned Wilayats</p>
-            <p class="text-2xl font-semibold text-gray-900">{{ assignedWilayatsCount }}</p>
+          <div class="ml-3">
+            <p class="text-xs font-medium text-gray-600">Assigned Wilayats</p>
+            <p class="text-lg font-semibold text-gray-900">{{ assignedWilayatsCount }}</p>
           </div>
         </div>
       </div>
-      <div class="bg-white p-6 rounded-lg shadow-sm border">
+      <div class="bg-white p-3 rounded-lg shadow-sm border">
         <div class="flex items-center">
-          <div class="p-2 bg-yellow-100 rounded-md">
-            <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div class="p-1.5 bg-yellow-100 rounded-md">
+            <svg class="w-4 h-4 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 15.5c-.77.833.192 2.5 1.732 2.5z"></path>
             </svg>
           </div>
-          <div class="ml-4">
-            <p class="text-sm font-medium text-gray-600">Unassigned Wilayats</p>
-            <p class="text-2xl font-semibold text-gray-900">{{ unassignedWilayats.length }}</p>
+          <div class="ml-3">
+            <p class="text-xs font-medium text-gray-600">Unassigned Wilayats</p>
+            <p class="text-lg font-semibold text-gray-900">{{ unassignedWilayats.length }}</p>
           </div>
         </div>
       </div>
-      <div class="bg-white p-6 rounded-lg shadow-sm border">
+      <div class="bg-white p-3 rounded-lg shadow-sm border">
         <div class="flex items-center">
-          <div class="p-2 bg-purple-100 rounded-md">
-            <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div class="p-1.5 bg-purple-100 rounded-md">
+            <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
             </svg>
           </div>
-          <div class="ml-4">
-            <p class="text-sm font-medium text-gray-600">Active Branches</p>
-            <p class="text-2xl font-semibold text-gray-900">{{ branches.length }}</p>
+          <div class="ml-3">
+            <p class="text-xs font-medium text-gray-600">Active Branches</p>
+            <p class="text-lg font-semibold text-gray-900">{{ branches.length }}</p>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Filters -->
-    <div class="bg-white rounded-lg shadow-sm border mb-6 p-4">
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div class="bg-white rounded-lg shadow-sm border mb-3 p-3">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Search</label>
           <input 
             v-model="filters.search"
             type="text" 
             placeholder="Search assignments..."
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
         </div>
         <div>
@@ -486,6 +486,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import axios from 'axios'
+import { useAPICache } from '../composables/useAPICache.js'
 
 // Data
 const assignments = ref([])
@@ -494,6 +495,7 @@ const governorates = ref([])
 const wilayats = ref([])
 const unassignedWilayats = ref([])
 const loading = ref(true)
+const { fetchBranches } = useAPICache()
 
 // Filters
 const filters = reactive({
@@ -569,25 +571,29 @@ const filteredAssignments = computed(() => {
 const fetchData = async () => {
   try {
     loading.value = true
-    const [assignmentsRes, branchesRes, governoratesRes, wilayatsRes, unassignedRes] = await Promise.all([
-      axios.get('/api/wilayat-branch-assignments', {
+    
+    // Fetch branches using cache
+    const branchesResult = await fetchBranches()
+    branches.value = branchesResult.data
+    
+    // Fetch other data in parallel
+    const [assignmentsRes, governoratesRes, wilayatsRes, unassignedRes] = await Promise.all([
+      axios.get('/wilayat-branch-assignments', {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
       }),
-      axios.get('/api/branches', {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
-      }),
-      axios.get('/api/governorates'),
-      axios.get('/api/wilayats'),
-      axios.get('/api/wilayat-branch-assignments/unassigned/wilayats', {
+      axios.get('/governorates'),
+      axios.get('/wilayats'),
+      axios.get('/wilayat-branch-assignments/unassigned/wilayats', {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
       })
     ])
 
     assignments.value = assignmentsRes.data.data
-    branches.value = branchesRes.data.branches || branchesRes.data
     governorates.value = governoratesRes.data.data
     wilayats.value = wilayatsRes.data.data
     unassignedWilayats.value = unassignedRes.data.data
+    
+    console.log('Branches loaded:', branches.value.length) // Debug log
   } catch (error) {
     console.error('Error fetching data:', error)
     alert('Failed to fetch data')
@@ -642,8 +648,8 @@ const saveAssignment = async () => {
     submittingAssignment.value = true
     
     const url = editingAssignment.value 
-      ? `/api/wilayat-branch-assignments/${editingAssignment.value.id}`
-      : '/api/wilayat-branch-assignments'
+      ? `/wilayat-branch-assignments/${editingAssignment.value.id}`
+      : '/wilayat-branch-assignments'
     const method = editingAssignment.value ? 'put' : 'post'
     
     const response = await axios[method](url, assignmentForm, {
@@ -665,7 +671,7 @@ const deleteAssignment = async (id) => {
   if (!confirm('Are you sure you want to delete this assignment?')) return
 
   try {
-    const response = await axios.delete(`/api/wilayat-branch-assignments/${id}`, {
+    const response = await axios.delete(`/wilayat-branch-assignments/${id}`, {
       headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
     })
     
@@ -702,7 +708,7 @@ const saveBulkAssignment = async () => {
   try {
     submittingBulkAssignment.value = true
     
-    const response = await axios.post('/api/wilayat-branch-assignments/bulk-assign', bulkAssignForm, {
+    const response = await axios.post('/wilayat-branch-assignments/bulk-assign', bulkAssignForm, {
       headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
     })
 

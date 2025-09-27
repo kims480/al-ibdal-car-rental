@@ -22,4 +22,28 @@ class Customer extends Model
         'license_back',
         'created_by',
     ];
+
+    /**
+     * Get the rentals for the customer.
+     */
+    public function rentals()
+    {
+        return $this->hasMany(Rental::class);
+    }
+
+    /**
+     * Get active rentals for the customer.
+     */
+    public function activeRentals()
+    {
+        return $this->hasMany(Rental::class)->where('status', 'active');
+    }
+
+    /**
+     * Get the user who created this customer.
+     */
+    public function createdBy()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
 }

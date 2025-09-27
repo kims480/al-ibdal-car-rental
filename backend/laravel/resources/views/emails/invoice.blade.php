@@ -74,7 +74,7 @@
 
     <div class="content">
         <div class="greeting">
-            <h2>Dear {{ $invoice->serviceRequest->customer_name }},</h2>
+            <h2>Dear {{ $invoice->getCustomerName() }},</h2>
             <p>Thank you for choosing AL IBDAL TRADING LLC for your car rental needs. Please find your invoice attached to this email.</p>
         </div>
 
@@ -91,22 +91,51 @@
                 <span>{{ $invoice->created_at->format('d/m/Y') }}</span>
             </div>
             
-            <div class="detail-row">
-                <span class="label">Service Request:</span>
-                <span>#{{ $invoice->serviceRequest->id }}</span>
-            </div>
-            
-            @if($invoice->serviceRequest->car)
-            <div class="detail-row">
-                <span class="label">Vehicle:</span>
-                <span>{{ $invoice->serviceRequest->car->make }} {{ $invoice->serviceRequest->car->model }} ({{ $invoice->serviceRequest->car->year }})</span>
-            </div>
+            @if($invoice->invoiceable_type === 'App\\Models\\ServiceRequest' || $invoice->serviceRequest)
+                @php
+                    $serviceRequest = $invoice->invoiceable_type === 'App\\Models\\ServiceRequest' ? $invoice->invoiceable : $invoice->serviceRequest;
+                @endphp
+                
+                <div class="detail-row">
+                    <span class="label">Service Request:</span>
+                    <span>#{{ $serviceRequest->id }}</span>
+                </div>
+                
+                @if($serviceRequest->car)
+                <div class="detail-row">
+                    <span class="label">Vehicle:</span>
+                    <span>{{ $serviceRequest->car->make }} {{ $serviceRequest->car->model }} ({{ $serviceRequest->car->year }})</span>
+                </div>
+                @endif
+                
+                <div class="detail-row">
+                    <span class="label">Rental Period:</span>
+                    <span>{{ \Carbon\Carbon::parse($serviceRequest->start_date)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($serviceRequest->end_date)->format('d/m/Y') }}</span>
+                </div>
             @endif
-            
-            <div class="detail-row">
-                <span class="label">Rental Period:</span>
-                <span>{{ \Carbon\Carbon::parse($invoice->serviceRequest->start_date)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($invoice->serviceRequest->end_date)->format('d/m/Y') }}</span>
-            </div>
+
+            @if($invoice->invoiceable_type === 'App\\Models\\Rental')
+                @php
+                    $rental = $invoice->invoiceable;
+                @endphp
+                
+                <div class="detail-row">
+                    <span class="label">Rental:</span>
+                    <span>#{{ $rental->id }}</span>
+                </div>
+                
+                @if($rental->car)
+                <div class="detail-row">
+                    <span class="label">Vehicle:</span>
+                    <span>{{ $rental->car->make }} {{ $rental->car->model }} ({{ $rental->car->year }})</span>
+                </div>
+                @endif
+                
+                <div class="detail-row">
+                    <span class="label">Rental Period:</span>
+                    <span>{{ \Carbon\Carbon::parse($rental->start_date)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($rental->end_date)->format('d/m/Y') }}</span>
+                </div>
+            @endif
             
             <div class="detail-row" style="border-top: 2px solid #2563eb; padding-top: 10px; margin-top: 20px; font-size: 18px; font-weight: bold;">
                 <span class="label">Total Amount:</span>
@@ -117,13 +146,24 @@
         <p><strong>Payment Instructions:</strong></p>
         <p>Please settle this invoice within 7 days of receipt. You can make payments through bank transfer or by visiting our branch office.</p>
 
-        @if($invoice->serviceRequest->branch)
+        @php
+            $branch = null;
+            if($invoice->invoiceable_type === 'App\\Models\\ServiceRequest' || $invoice->serviceRequest) {
+                $serviceRequest = $invoice->invoiceable_type === 'App\\Models\\ServiceRequest' ? $invoice->invoiceable : $invoice->serviceRequest;
+                $branch = $serviceRequest->branch;
+            } elseif($invoice->invoiceable_type === 'App\\Models\\Rental') {
+                $rental = $invoice->invoiceable;
+                $branch = $rental->car ? $rental->car->branch : null;
+            }
+        @endphp
+
+        @if($branch)
         <div class="invoice-details">
             <h3 style="color: #2563eb; margin-top: 0;">Branch Information</h3>
-            <p><strong>{{ $invoice->serviceRequest->branch->name }}</strong><br>
-            {{ $invoice->serviceRequest->branch->address }}<br>
-            Phone: {{ $invoice->serviceRequest->branch->contact_phone }}<br>
-            Email: {{ $invoice->serviceRequest->branch->contact_email }}</p>
+            <p><strong>{{ $branch->name }}</strong><br>
+            {{ $branch->address }}<br>
+            Phone: {{ $branch->contact_phone }}<br>
+            Email: {{ $branch->contact_email }}</p>
         </div>
         @endif
 

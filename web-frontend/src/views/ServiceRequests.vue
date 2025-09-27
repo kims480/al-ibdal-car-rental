@@ -1,216 +1,324 @@
 <template>
-  <div class="p-6">
-    <div class="flex justify-between items-center mb-6">
-      <div>
-        <h1 class="text-3xl font-bold text-gray-900">Service Requests</h1>
-        <p class="text-gray-600 mt-1">Manage maintenance and service tickets</p>
-      </div>
-      <button 
-        @click="openCreateModal"
-        class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg flex items-center gap-2 transition-colors"
-      >
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-        </svg>
-        New Request
-      </button>
-    </div>
-
-    <!-- Filters -->
-    <div class="bg-white rounded-lg shadow-sm border mb-6 p-4">
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-          <select 
-            v-model="filters.status"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">All Statuses</option>
-            <option value="pending">Pending</option>
-            <option value="assigned">Assigned</option>
-            <option value="in_progress">In Progress</option>
-            <option value="completed">Completed</option>
-            <option value="cancelled">Cancelled</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Priority</label>
-          <select 
-            v-model="filters.priority"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">All Priorities</option>
-            <option value="low">Low</option>
-            <option value="medium">Medium</option>
-            <option value="high">High</option>
-            <option value="critical">Critical</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
-          <div class="flex gap-2">
-            <input 
-              v-model="filters.start_date"
-              type="date" 
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-            <input 
-              v-model="filters.end_date"
-              type="date" 
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
+  <div class="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-2 sm:p-3">
+    <div class="max-w-7xl mx-auto">
+      <!-- Loading skeleton -->
+      <CRUDTableSkeleton v-if="initialLoading" />
+      
+      <!-- Main content -->
+      <div v-else>
+      <!-- Page Header -->
+      <div class="service-header rounded-lg p-3 mb-3">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+          <div>
+            <div class="flex items-center gap-2 mb-1">
+              <div class="header-icon">
+                <WrenchScrewdriverIcon class="w-4 h-4" />
+              </div>
+              <h1 class="text-lg sm:text-xl font-bold text-gray-900">Service Requests</h1>
+            </div>
+            <p class="text-sm text-gray-600">Manage maintenance and service tickets efficiently</p>
           </div>
-        </div>
-        <div class="flex items-end">
           <button 
-            @click="fetchServiceRequests"
-            class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md transition-colors"
+            @click="openCreateModal"
+            class="create-btn flex items-center gap-1 px-3 py-2 rounded-lg font-medium transition-all duration-300"
           >
-            Filter
+            <PlusIcon class="w-4 h-4" />
+            New Request
           </button>
         </div>
       </div>
-    </div>
 
-    <!-- Stats Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-      <div class="bg-white rounded-lg shadow-sm border p-4 flex items-center">
-        <div class="rounded-full bg-blue-100 p-3 mr-4">
-          <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-          </svg>
+      <!-- Enhanced Filters Section -->
+      <div class="filter-section rounded-lg p-3 mb-3">
+        <div class="flex items-center gap-2 mb-2">
+          <FunnelIcon class="w-4 h-4 text-gray-600" />
+          <h3 class="text-sm font-semibold text-gray-900">Filters</h3>
         </div>
-        <div>
-          <p class="text-sm text-gray-600">Total Requests</p>
-          <p class="text-xl font-bold">{{ statistics.total }}</p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-2">
+          <div class="filter-input-group">
+            <label class="filter-label">Status</label>
+            <select v-model="filters.status" class="filter-select">
+              <option value="">All Statuses</option>
+              <option value="pending">Pending</option>
+              <option value="assigned">Assigned</option>
+              <option value="in_progress">In Progress</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+          <div class="filter-input-group">
+            <label class="filter-label">Priority</label>
+            <select v-model="filters.priority" class="filter-select">
+              <option value="">All Priorities</option>
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+              <option value="critical">Critical</option>
+            </select>
+          </div>
+          <div class="filter-input-group">
+            <label class="filter-label">Start Date</label>
+            <input v-model="filters.start_date" type="date" class="filter-input">
+          </div>
+          <div class="filter-input-group">
+            <label class="filter-label">End Date</label>
+            <input v-model="filters.end_date" type="date" class="filter-input">
+          </div>
+          <div class="filter-input-group">
+            <label class="filter-label invisible">Actions</label>
+            <div class="flex gap-2">
+              <button 
+                @click="fetchServiceRequests"
+                class="filter-btn primary"
+                title="Apply Filters"
+              >
+                <MagnifyingGlassIcon class="w-4 h-4" />
+                Filter
+              </button>
+              <button 
+                @click="resetFilters"
+                class="filter-btn secondary"
+                title="Reset Filters"
+              >
+                <XMarkIcon class="w-3 h-3" />
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
-      <div class="bg-white rounded-lg shadow-sm border p-4 flex items-center">
-        <div class="rounded-full bg-yellow-100 p-3 mr-4">
-          <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-          </svg>
-        </div>
-        <div>
-          <p class="text-sm text-gray-600">Pending</p>
-          <p class="text-xl font-bold">{{ statistics.pending }}</p>
-        </div>
-      </div>
-      <div class="bg-white rounded-lg shadow-sm border p-4 flex items-center">
-        <div class="rounded-full bg-green-100 p-3 mr-4">
-          <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-          </svg>
-        </div>
-        <div>
-          <p class="text-sm text-gray-600">Completed</p>
-          <p class="text-xl font-bold">{{ statistics.completed }}</p>
-        </div>
-      </div>
-      <div class="bg-white rounded-lg shadow-sm border p-4 flex items-center">
-        <div class="rounded-full bg-red-100 p-3 mr-4">
-          <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-          </svg>
-        </div>
-        <div>
-          <p class="text-sm text-gray-600">Critical Issues</p>
-          <p class="text-xl font-bold">{{ statistics.critical }}</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Service Requests Table -->
-    <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
-      <div v-if="loading" class="p-8 text-center">
-        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-        <p class="text-gray-600 mt-2">Loading service requests...</p>
-      </div>
-
-      <div v-else-if="serviceRequests.length === 0" class="p-8 text-center text-gray-500">
-        <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-        </svg>
-        <p>No service requests found</p>
       </div>
 
-      <div v-else class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
-            <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Car</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Issue Type</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Priority</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Assigned To</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-            </tr>
-          </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
-            <tr v-for="request in serviceRequests" :key="request.id" class="hover:bg-gray-50">
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                #{{ request.id }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div>
-                  <div class="text-sm font-medium text-gray-900">{{ request.car?.make }} {{ request.car?.model }}</div>
-                  <div class="text-sm text-gray-500">{{ request.car?.license_plate }}</div>
-                </div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {{ request.issue_type }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {{ formatDate(request.created_at) }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span :class="getStatusClass(request.status)" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full">
-                  {{ formatStatus(request.status) }}
-                </span>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span :class="getPriorityClass(request.priority)" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full">
-                  {{ formatPriority(request.priority) }}
-                </span>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {{ request.assignee?.name || 'Unassigned' }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                <div class="flex space-x-2">
-                  <button 
-                    @click="openViewModal(request)"
-                    class="text-blue-600 hover:text-blue-900"
-                    title="View Details"
-                  >
-                    View
-                  </button>
-                  <button 
-                    @click="openEditModal(request)"
-                    class="text-indigo-600 hover:text-indigo-900"
-                    title="Edit Request"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    v-if="canDeleteRequest(request)"
-                    @click="confirmDelete(request)"
-                    class="text-red-600 hover:text-red-900"
-                    title="Delete Request"
-                  >
-                    Delete
-                  </button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      <!-- Enhanced Stats Cards -->
+      <div class="stats-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 mb-3">
+        <div class="stat-card total">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="stat-label">Total Requests</p>
+              <p class="stat-value">{{ statistics.total }}</p>
+              <p class="stat-trend text-blue-600">
+                <ChartBarIcon class="w-3 h-3 inline mr-1" />
+                All time
+              </p>
+            </div>
+            <div class="stat-icon total">
+              <ClipboardDocumentListIcon class="w-6 h-6" />
+            </div>
+          </div>
+        </div>
+        
+        <div class="stat-card pending">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="stat-label">Pending</p>
+              <p class="stat-value">{{ statistics.pending }}</p>
+              <p class="stat-trend text-amber-600">
+                <ClockIcon class="w-4 h-4 inline mr-1" />
+                Needs attention
+              </p>
+            </div>
+            <div class="stat-icon pending">
+              <ClockIcon class="w-6 h-6" />
+            </div>
+          </div>
+        </div>
+        
+        <div class="stat-card completed">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="stat-label">Completed</p>
+              <p class="stat-value">{{ statistics.completed }}</p>
+              <p class="stat-trend text-emerald-600">
+                <CheckCircleIcon class="w-4 h-4 inline mr-1" />
+                Resolved
+              </p>
+            </div>
+            <div class="stat-icon completed">
+              <CheckCircleIcon class="w-6 h-6" />
+            </div>
+          </div>
+        </div>
+        
+        <div class="stat-card critical">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="stat-label">Critical Issues</p>
+              <p class="stat-value">{{ statistics.critical }}</p>
+              <p class="stat-trend text-red-600">
+                <ExclamationTriangleIcon class="w-4 h-4 inline mr-1" />
+                High priority
+              </p>
+            </div>
+            <div class="stat-icon critical">
+              <ExclamationTriangleIcon class="w-6 h-6" />
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
 
-    <!-- Create/Edit Modal -->
+      <!-- Modern Service Requests Table -->
+      <div class="table-container rounded-lg overflow-hidden">
+        <!-- Loading State -->
+        <div v-if="loading" class="loading-state">
+          <div class="loading-spinner"></div>
+          <p class="loading-text">Loading service requests...</p>
+        </div>
+
+        <!-- Empty State -->
+        <div v-else-if="serviceRequests.length === 0" class="empty-state">
+          <div class="empty-icon">
+            <ClipboardDocumentIcon class="w-12 h-12" />
+          </div>
+          <h3 class="empty-title">No service requests found</h3>
+          <p class="empty-description">Create your first service request to get started</p>
+          <button @click="openCreateModal" class="empty-action-btn">
+            <PlusIcon class="w-4 h-4" />
+            Create Request
+          </button>
+        </div>
+
+        <!-- Table -->
+        <div v-else class="table-wrapper">
+          <table class="service-table">
+            <thead>
+              <tr>
+                <th class="table-header">
+                  <div class="header-content">
+                    <HashtagIcon class="w-4 h-4" />
+                    ID
+                  </div>
+                </th>
+                <th class="table-header">
+                  <div class="header-content">
+                    <TruckIcon class="w-4 h-4" />
+                    Vehicle
+                  </div>
+                </th>
+                <th class="table-header">
+                  <div class="header-content">
+                    <WrenchScrewdriverIcon class="w-4 h-4" />
+                    Service Type
+                  </div>
+                </th>
+                <th class="table-header">
+                  <div class="header-content">
+                    <UserIcon class="w-4 h-4" />
+                    Customer
+                  </div>
+                </th>
+                <th class="table-header">
+                  <div class="header-content">
+                    <CalendarDaysIcon class="w-4 h-4" />
+                    Date
+                  </div>
+                </th>
+                <th class="table-header">
+                  <div class="header-content">
+                    Status
+                  </div>
+                </th>
+                <th class="table-header">
+                  <div class="header-content">
+                    Priority
+                  </div>
+                </th>
+                <th class="table-header">
+                  <div class="header-content">
+                    <UserIcon class="w-4 h-4" />
+                    Technician
+                  </div>
+                </th>
+                <th class="table-header text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="request in serviceRequests" :key="request.id" class="table-row">
+                <td class="table-cell">
+                  <div class="request-id">
+                    #{{ request.id }}
+                  </div>
+                </td>
+                <td class="table-cell">
+                  <div class="vehicle-info">
+                    <div class="vehicle-name">{{ request.car?.make }} {{ request.car?.model }}</div>
+                    <div class="vehicle-plate">{{ request.car?.license_plate || 'N/A' }}</div>
+                  </div>
+                </td>
+                <td class="table-cell">
+                  <div class="service-type">
+                    <div class="service-name">{{ request.service_type || request.issue_type || 'General Service' }}</div>
+                    <div class="service-description">{{ truncateText(request.description, 40) }}</div>
+                  </div>
+                </td>
+                <td class="table-cell">
+                  <div class="customer-info">
+                    <div class="customer-name">{{ request.customer?.name || request.customer_name || 'N/A' }}</div>
+                    <div class="customer-phone">{{ request.customer?.phone || request.customer_phone || 'N/A' }}</div>
+                  </div>
+                </td>
+                <td class="table-cell">
+                  <div class="request-date">{{ formatDate(request.created_at) }}</div>
+                </td>
+                <td class="table-cell">
+                  <span :class="getStatusBadgeClass(request.status)" class="status-badge">
+                    {{ formatStatus(request.status) }}
+                  </span>
+                </td>
+                <td class="table-cell">
+                  <span :class="getPriorityBadgeClass(request.priority)" class="priority-badge">
+                    {{ formatPriority(request.priority) }}
+                  </span>
+                </td>
+                <td class="table-cell">
+                  <div class="technician-info">
+                    <div v-if="request.technician?.name || request.assignee?.name" class="technician-avatar">
+                      {{ (request.technician?.name || request.assignee?.name).charAt(0).toUpperCase() }}
+                    </div>
+                    <div class="technician-details">
+                      <span class="technician-name">{{ request.technician?.name || request.assignee?.name || 'Unassigned' }}</span>
+                      <span class="technician-role">{{ request.technician?.role || request.assignee?.role || 'Technician' }}</span>
+                    </div>
+                  </div>
+                </td>
+                <td class="table-cell text-center">
+                  <div class="action-buttons">
+                    <button 
+                      @click="openWorkflowModal(request)"
+                      class="action-btn workflow"
+                      title="View Workflow"
+                    >
+                      <CogIcon class="w-4 h-4" />
+                    </button>
+                    <button 
+                      @click="openViewModal(request)"
+                      class="action-btn view"
+                      title="View Details"
+                    >
+                      <EyeIcon class="w-4 h-4" />
+                    </button>
+                    <button 
+                      @click="openEditModal(request)"
+                      class="action-btn edit"
+                      title="Edit Request"
+                    >
+                      <PencilSquareIcon class="w-4 h-4" />
+                    </button>
+                    <button
+                      v-if="canDeleteRequest(request)"
+                      @click="confirmDelete(request)"
+                      class="action-btn delete"
+                      title="Delete Request"
+                    >
+                      <TrashIcon class="w-4 h-4" />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      </div> <!-- Close v-else main content div -->
+
+      <!-- Create/Edit Modal -->
     <div v-if="showModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
       <div class="relative top-20 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white">
         <div class="mb-4">
@@ -264,18 +372,71 @@
               </select>
             </div>
           </div>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Rental Start Date *</label>
-              <input v-model="form.rental_start" type="date" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" @change="updateEndTime" />
+              <label class="block text-sm font-medium text-gray-700 mb-1">Service Type *</label>
+              <select v-model="form.service_type" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="">Select Service Type</option>
+                <option value="maintenance">Maintenance</option>
+                <option value="repair">Repair</option>
+                <option value="inspection">Inspection</option>
+                <option value="cleaning">Cleaning</option>
+                <option value="towing">Towing</option>
+                <option value="other">Other</option>
+              </select>
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Rent Duration (days) *</label>
-              <input v-model.number="form.rent_duration" type="number" min="1" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" @input="updateEndTime" />
+              <label class="block text-sm font-medium text-gray-700 mb-1">Priority *</label>
+              <select v-model="form.priority" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="">Select Priority</option>
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+                <option value="critical">Critical</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Vehicle *</label>
+              <select v-model="form.car_id" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="">Select Vehicle</option>
+                <option v-for="car in cars" :key="car.id" :value="car.id">
+                  {{ car.make }} {{ car.model }} - {{ car.license_plate }}
+                </option>
+              </select>
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Rental End Date *</label>
-              <input v-model="form.rental_end" type="date" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" readonly />
+              <label class="block text-sm font-medium text-gray-700 mb-1">Assign Technician</label>
+              <select v-model="form.technician_id" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="">Select Technician</option>
+                <option v-for="tech in technicians" :key="tech.id" :value="tech.id">
+                  {{ tech.name }} - {{ tech.role }}
+                </option>
+              </select>
+            </div>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Service Description *</label>
+            <textarea 
+              v-model="form.description" 
+              required 
+              rows="4"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Describe the service needed, issues encountered, or specific requirements..."
+            ></textarea>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Scheduled Date</label>
+              <input v-model="form.scheduled_date" type="datetime-local" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Estimated Cost (OMR)</label>
+              <input v-model.number="form.estimated_cost" type="number" step="0.01" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="0.00" />
             </div>
           </div>
 
@@ -393,14 +554,65 @@
             </button>
           </div>
         </div>
+      </div> <!-- Close View Modal inner div -->
+    </div> <!-- Close View Modal outer div -->
+
+    <!-- Workflow Modal -->
+    <div v-if="showWorkflowModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+      <div class="relative top-4 mx-auto p-3 border w-full max-w-6xl shadow-lg rounded-lg bg-white min-h-[90vh]">
+        <div class="flex justify-between items-center mb-4">
+          <div>
+            <h3 class="text-xl font-bold text-gray-900">
+              Service Request Workflow
+            </h3>
+            <p class="text-sm text-gray-600">
+              Request #{{ selectedWorkflowRequest?.id }} - {{ selectedWorkflowRequest?.issue_type }}
+            </p>
+          </div>
+          <button 
+            @click="closeWorkflowModal"
+            class="text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            <XMarkIcon class="w-6 h-6" />
+          </button>
+        </div>
+        
+        <div v-if="selectedWorkflowRequest" class="workflow-modal-content">
+          <ServiceRequestWorkflow :service-request-id="selectedWorkflowRequest.id" />
+        </div>
       </div>
     </div>
-  </div>
+    </div> <!-- Close max-w-7xl div -->
+  </div> <!-- Close min-h-screen div -->
 </template>
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
+import { toast } from '../composables/useToast'
 import { useAuthStore } from '../stores/auth'
+import CRUDTableSkeleton from '../components/CRUDTableSkeleton.vue'
+import ServiceRequestWorkflow from '../components/ServiceRequestWorkflow.vue'
+import { 
+  PlusIcon,
+  WrenchScrewdriverIcon,
+  FunnelIcon,
+  MagnifyingGlassIcon,
+  XMarkIcon,
+  ClipboardDocumentListIcon,
+  ClockIcon,
+  CheckCircleIcon,
+  ExclamationTriangleIcon,
+  ChartBarIcon,
+  ClipboardDocumentIcon,
+  HashtagIcon,
+  TruckIcon,
+  CalendarDaysIcon,
+  UserIcon,
+  EyeIcon,
+  PencilSquareIcon,
+  TrashIcon,
+  CogIcon
+} from '@heroicons/vue/24/outline'
 import axios from 'axios'
 
 const user = computed(() => useAuthStore().user)
@@ -419,11 +631,14 @@ const technicians = ref([])
 const governorates = ref([])
 const wilayats = ref([])
 const loading = ref(false)
+const initialLoading = ref(true)
 const showModal = ref(false)
 const showViewModal = ref(false)
+const showWorkflowModal = ref(false)
 const isEditing = ref(false)
 const submitting = ref(false)
 const selectedRequest = ref(null)
+const selectedWorkflowRequest = ref(null)
 
 const statistics = reactive({
   total: 0,
@@ -445,10 +660,23 @@ const form = reactive({
   customer_location: '',
   governorate_id: '',
   wilayat_id: '',
-  rental_start: '',
-  rental_end: '',
-  rent_duration: 1
+  service_type: '',
+  priority: '',
+  car_id: '',
+  technician_id: '',
+  description: '',
+  scheduled_date: '',
+  estimated_cost: 0
 })
+
+// Reset filters
+const resetFilters = () => {
+  filters.status = ''
+  filters.priority = ''
+  filters.start_date = ''
+  filters.end_date = ''
+  fetchServiceRequests()
+}
 
 // Fetch service requests from API
 const fetchServiceRequests = async () => {
@@ -564,6 +792,15 @@ const openEditModal = async (request) => {
   form.governorate_id = request.governorate_id || ''
   form.wilayat_id = request.wilayat_id || ''
   
+  // Map Service Request specific fields
+  form.customer_name = request.customer_name || request.customer?.name || ''
+  form.customer_phone = request.customer_phone || request.customer?.phone || ''
+  form.customer_location = request.customer_location || ''
+  form.service_type = request.service_type || request.issue_type || ''
+  form.technician_id = request.technician_id || request.assignee_id || ''
+  form.scheduled_date = request.scheduled_date || ''
+  form.estimated_cost = request.estimated_cost || 0
+  
   showModal.value = true
 }
 
@@ -582,26 +819,29 @@ const closeViewModal = () => {
   selectedRequest.value = null
 }
 
+const openWorkflowModal = (request) => {
+  selectedWorkflowRequest.value = request
+  showWorkflowModal.value = true
+}
+
+const closeWorkflowModal = () => {
+  showWorkflowModal.value = false
+  selectedWorkflowRequest.value = null
+}
+
 const resetForm = () => {
   form.customer_name = ''
   form.customer_phone = ''
   form.customer_location = ''
   form.governorate_id = ''
   form.wilayat_id = ''
-  form.rental_start = ''
-  form.rental_end = ''
-  form.rent_duration = 1
-}
-
-// Auto-calculate rental end time
-function updateEndTime() {
-  if (form.rental_start && form.rent_duration > 0) {
-    const startDate = new Date(form.rental_start)
-    startDate.setDate(startDate.getDate() + Number(form.rent_duration) - 1)
-    form.rental_end = startDate.toISOString().split('T')[0]
-  } else {
-    form.rental_end = ''
-  }
+  form.service_type = ''
+  form.priority = ''
+  form.car_id = ''
+  form.technician_id = ''
+  form.description = ''
+  form.scheduled_date = ''
+  form.estimated_cost = 0
 }
 
 // Form submission
@@ -618,11 +858,11 @@ const submitForm = async () => {
     if (response.data.success) {
       closeModal()
       fetchServiceRequests()
-      alert(isEditing.value ? 'Service request updated successfully!' : 'Service request submitted successfully!')
+      toast.success(isEditing.value ? 'Service request updated successfully!' : 'Service request submitted successfully!')
     }
   } catch (error) {
     console.error('Error saving service request:', error)
-    alert(error.response?.data?.message || 'Failed to save service request')
+    toast.error(error.response?.data?.message || 'Failed to save service request')
   } finally {
     submitting.value = false
   }
@@ -646,11 +886,11 @@ const deleteRequest = async (request) => {
     
     if (response.data.success) {
       fetchServiceRequests()
-      alert('Service request deleted successfully!')
+      toast.success('Service request deleted successfully!')
     }
   } catch (error) {
     console.error('Error deleting service request:', error)
-    alert(error.response?.data?.message || 'Failed to delete service request')
+    toast.error(error.response?.data?.message || 'Failed to delete service request')
   }
 }
 
@@ -678,6 +918,23 @@ const getStatusClass = (status) => {
   }
 }
 
+const getStatusBadgeClass = (status) => {
+  switch (status) {
+    case 'pending':
+      return 'status-pending'
+    case 'assigned':
+      return 'status-assigned'
+    case 'in_progress':
+      return 'status-in-progress'
+    case 'completed':
+      return 'status-completed'
+    case 'cancelled':
+      return 'status-cancelled'
+    default:
+      return 'status-default'
+  }
+}
+
 const formatStatus = (status) => {
   if (status === 'in_progress') return 'In Progress'
   return status.charAt(0).toUpperCase() + status.slice(1)
@@ -698,13 +955,709 @@ const getPriorityClass = (priority) => {
   }
 }
 
+const getPriorityBadgeClass = (priority) => {
+  switch (priority) {
+    case 'low':
+      return 'priority-low'
+    case 'medium':
+      return 'priority-medium'
+    case 'high':
+      return 'priority-high'
+    case 'critical':
+      return 'priority-critical'
+    default:
+      return 'priority-default'
+  }
+}
+
 const formatPriority = (priority) => {
   return priority.charAt(0).toUpperCase() + priority.slice(1)
 }
 
-onMounted(() => {
-  fetchServiceRequests()
-  fetchCars()
-  fetchTechnicians()
+const truncateText = (text, maxLength) => {
+  if (!text) return 'N/A'
+  return text.length > maxLength ? text.substring(0, maxLength) + '...' : text
+}
+
+onMounted(async () => {
+  // Start all API calls in parallel for better performance  
+  try {
+    const [serviceRequestsPromise, carsPromise, techniciansPromise] = await Promise.all([
+      fetchServiceRequests(),
+      fetchCars(),
+      fetchTechnicians()
+    ])
+  } catch (error) {
+    console.error('Error loading initial data:', error)
+  } finally {
+    initialLoading.value = false
+  }
 })
 </script>
+
+<style scoped>
+/* Page Header */
+.service-header {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 69, 19, 0.1) 100%);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  backdrop-filter: blur(10px);
+}
+
+.header-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.create-btn {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: white;
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.create-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+}
+
+/* Enhanced Filters */
+.filter-section {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.9) 100%);
+  border: 1px solid rgba(229, 231, 235, 0.5);
+  backdrop-filter: blur(10px);
+}
+
+.filter-input-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.filter-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.125rem;
+}
+
+.filter-select, .filter-input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.375rem;
+  background: white;
+  transition: all 0.3s ease;
+  font-size: 0.75rem;
+}
+
+.filter-select:focus, .filter-input:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.filter-btn {
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+  font-weight: 500;
+  font-size: 0.75rem;
+  transition: all 0.3s ease;
+  border: 1px solid;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  cursor: pointer;
+}
+
+.filter-btn.primary {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  border-color: #6366f1;
+  color: white;
+}
+
+.filter-btn.primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.filter-btn.secondary {
+  background: white;
+  border-color: #e5e7eb;
+  color: #6b7280;
+}
+
+.filter-btn.secondary:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+/* Enhanced Stats Cards */
+.stats-grid {
+  gap: 0.5rem;
+}
+
+.stat-card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%);
+  border: 1px solid rgba(229, 231, 235, 0.6);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.stat-card.total {
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.stat-card.total:hover {
+  border-color: rgba(59, 130, 246, 0.5);
+  box-shadow: 0 10px 25px rgba(59, 130, 246, 0.15);
+}
+
+.stat-card.pending {
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.stat-card.pending:hover {
+  border-color: rgba(245, 158, 11, 0.5);
+  box-shadow: 0 10px 25px rgba(245, 158, 11, 0.15);
+}
+
+.stat-card.completed {
+  border-color: rgba(34, 197, 94, 0.3);
+}
+
+.stat-card.completed:hover {
+  border-color: rgba(34, 197, 94, 0.5);
+  box-shadow: 0 10px 25px rgba(34, 197, 94, 0.15);
+}
+
+.stat-card.critical {
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.stat-card.critical:hover {
+  border-color: rgba(239, 68, 68, 0.5);
+  box-shadow: 0 10px 25px rgba(239, 68, 68, 0.15);
+}
+
+.stat-label {
+  color: #6b7280;
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-bottom: 0.125rem;
+}
+
+.stat-value {
+  color: #111827;
+  font-size: 1.25rem;
+  font-weight: bold;
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+
+.stat-trend {
+  font-size: 0.625rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+}
+
+.stat-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.stat-icon.total {
+  background: linear-gradient(135deg, #3b82f6 0%, #93c5fd 100%);
+}
+
+.stat-icon.pending {
+  background: linear-gradient(135deg, #f59e0b 0%, #fcd34d 100%);
+}
+
+.stat-icon.completed {
+  background: linear-gradient(135deg, #22c55e 0%, #86efac 100%);
+}
+
+.stat-icon.critical {
+  background: linear-gradient(135deg, #ef4444 0%, #fca5a5 100%);
+}
+
+/* Enhanced Table */
+.table-container {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%);
+  border: 1px solid rgba(229, 231, 235, 0.5);
+  backdrop-filter: blur(10px);
+}
+
+.loading-state {
+  padding: 1.5rem;
+  text-align: center;
+  color: #6b7280;
+}
+
+.loading-spinner {
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 3px solid #e5e7eb;
+  border-top: 3px solid #6366f1;
+  border-radius: 50%;
+  margin: 0 auto 0.75rem;
+  animation: spin 1s linear infinite;
+}
+
+.loading-text {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.empty-state {
+  padding: 2rem 1rem;
+  text-align: center;
+  color: #6b7280;
+}
+
+.empty-icon {
+  color: #d1d5db;
+  margin: 0 auto 1rem;
+  display: flex;
+  justify-content: center;
+}
+
+.empty-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.empty-description {
+  color: #6b7280;
+  margin-bottom: 1.5rem;
+}
+
+.empty-action-btn {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: none;
+  cursor: pointer;
+}
+
+.empty-action-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.service-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table-header {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: #374151;
+  font-size: 0.875rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.table-row {
+  transition: all 0.2s ease;
+  border-bottom: 1px solid rgba(229, 231, 235, 0.3);
+}
+
+.table-row:hover {
+  background: rgba(99, 102, 241, 0.02);
+}
+
+.table-cell {
+  padding: 1rem;
+  vertical-align: middle;
+}
+
+.request-id {
+  font-weight: 600;
+  color: #6366f1;
+  font-size: 0.875rem;
+}
+
+.vehicle-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.vehicle-name {
+  font-weight: 500;
+  color: #111827;
+  font-size: 0.875rem;
+}
+
+.vehicle-plate {
+  color: #6b7280;
+  font-size: 0.75rem;
+}
+
+.service-type {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.service-name {
+  font-weight: 500;
+  color: #111827;
+  font-size: 0.875rem;
+}
+
+.service-description {
+  color: #6b7280;
+  font-size: 0.75rem;
+}
+
+.customer-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.customer-name {
+  font-weight: 500;
+  color: #111827;
+  font-size: 0.875rem;
+}
+
+.customer-phone {
+  color: #6b7280;
+  font-size: 0.75rem;
+}
+
+.issue-type {
+  color: #374151;
+  font-size: 0.875rem;
+}
+
+.request-date {
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.assignee-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.assignee-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+
+.assignee-name {
+  color: #374151;
+  font-size: 0.875rem;
+}
+
+.technician-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.technician-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+
+.technician-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.technician-name {
+  color: #374151;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.technician-role {
+  color: #6b7280;
+  font-size: 0.75rem;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.action-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  border: 1px solid;
+  cursor: pointer;
+}
+
+.action-btn.workflow {
+  background: rgba(99, 102, 241, 0.1);
+  border-color: rgba(99, 102, 241, 0.3);
+  color: #6366f1;
+}
+
+.action-btn.workflow:hover {
+  background: rgba(99, 102, 241, 0.2);
+  transform: scale(1.1);
+}
+
+.action-btn.view {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.3);
+  color: #3b82f6;
+}
+
+.action-btn.view:hover {
+  background: rgba(59, 130, 246, 0.2);
+  transform: scale(1.1);
+}
+
+.action-btn.edit {
+  background: rgba(168, 85, 247, 0.1);
+  border-color: rgba(168, 85, 247, 0.3);
+  color: #a855f7;
+}
+
+.action-btn.edit:hover {
+  background: rgba(168, 85, 247, 0.2);
+  transform: scale(1.1);
+}
+
+.action-btn.delete {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+}
+
+.action-btn.delete:hover {
+  background: rgba(239, 68, 68, 0.2);
+  transform: scale(1.1);
+}
+
+/* Status Badges */
+.status-badge, .priority-badge {
+  padding: 0.375rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.status-pending {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(251, 191, 36, 0.1) 100%);
+  color: #d97706;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.status-assigned {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 197, 253, 0.1) 100%);
+  color: #2563eb;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.status-in-progress {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(165, 180, 252, 0.1) 100%);
+  color: #6366f1;
+  border: 1px solid rgba(99, 102, 241, 0.3);
+}
+
+.status-completed {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(134, 239, 172, 0.1) 100%);
+  color: #16a34a;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.status-cancelled {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(248, 113, 113, 0.1) 100%);
+  color: #dc2626;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.status-default {
+  background: linear-gradient(135deg, rgba(107, 114, 128, 0.1) 0%, rgba(156, 163, 175, 0.1) 100%);
+  color: #6b7280;
+  border: 1px solid rgba(107, 114, 128, 0.3);
+}
+
+/* Priority Badges */
+.priority-low {
+  background: linear-gradient(135deg, rgba(107, 114, 128, 0.1) 0%, rgba(156, 163, 175, 0.1) 100%);
+  color: #6b7280;
+  border: 1px solid rgba(107, 114, 128, 0.3);
+}
+
+.priority-medium {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 197, 253, 0.1) 100%);
+  color: #2563eb;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.priority-high {
+  background: linear-gradient(135deg, rgba(251, 146, 60, 0.1) 0%, rgba(254, 215, 170, 0.1) 100%);
+  color: #ea580c;
+  border: 1px solid rgba(251, 146, 60, 0.3);
+}
+
+.priority-critical {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(248, 113, 113, 0.1) 100%);
+  color: #dc2626;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.priority-default {
+  background: linear-gradient(135deg, rgba(107, 114, 128, 0.1) 0%, rgba(156, 163, 175, 0.1) 100%);
+  color: #6b7280;
+  border: 1px solid rgba(107, 114, 128, 0.3);
+}
+
+/* Animations */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Workflow Modal Styles */
+.workflow-modal-content {
+  max-height: calc(90vh - 100px);
+  overflow-y: auto;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+  
+  .stat-value {
+    font-size: 1.75rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .service-header {
+    padding: 1.25rem;
+  }
+  
+  .filter-section {
+    padding: 1.25rem;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .stat-card {
+    padding: 1.25rem;
+  }
+  
+  .table-header,
+  .table-cell {
+    padding: 0.75rem 0.5rem;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  
+  .action-btn {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+@media (max-width: 640px) {
+  .filter-input-group {
+    grid-column: 1 / -1;
+  }
+  
+  .create-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .assignee-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .technician-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .customer-info,
+  .service-type {
+    align-items: flex-start;
+  }
+}
+</style>

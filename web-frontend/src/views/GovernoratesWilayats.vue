@@ -1,25 +1,25 @@
 <template>
-  <div class="p-6">
-    <div class="flex justify-between items-center mb-6">
+  <div class="p-3">
+    <div class="flex justify-between items-center mb-3">
       <div>
-        <h1 class="text-3xl font-bold text-gray-900">Governorates & Wilayats</h1>
-        <p class="text-gray-600 mt-1">Manage Oman administrative divisions</p>
+        <h1 class="text-xl font-bold text-gray-900">Governorates & Wilayats</h1>
+        <p class="text-gray-600 mt-1 text-sm">Manage Oman administrative divisions</p>
       </div>
-      <div class="flex gap-3">
+      <div class="flex gap-2">
         <button 
           @click="openWilayatModal"
-          class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+          class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors text-sm"
         >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
           </svg>
           Add Wilayat
         </button>
         <button 
           @click="openGovernorateModal"
-          class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+          class="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors text-sm"
         >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
           </svg>
           Add Governorate
@@ -28,22 +28,22 @@
     </div>
 
     <!-- Filters -->
-    <div class="bg-white rounded-lg shadow-sm border mb-6 p-4">
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="bg-white rounded-lg shadow-sm border mb-3 p-3">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Search</label>
           <input 
             v-model="filters.search"
             type="text" 
             placeholder="Search governorates and wilayats..."
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Filter by Governorate</label>
           <select 
             v-model="filters.governorate_id"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="">All Governorates</option>
             <option v-for="gov in governorates" :key="gov.id" :value="gov.id">
@@ -55,7 +55,7 @@
           <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
           <select 
             v-model="filters.active"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="">All</option>
             <option value="true">Active</option>
@@ -66,16 +66,16 @@
     </div>
 
     <!-- Governorates List -->
-    <div class="space-y-6">
+    <div class="space-y-3">
       <div v-for="governorate in filteredGovernorates" :key="governorate.id" class="bg-white rounded-lg shadow-sm border">
-        <div class="p-6 border-b border-gray-200">
+        <div class="p-4 border-b border-gray-200">
           <div class="flex justify-between items-start">
             <div class="flex-1">
-              <h3 class="text-xl font-semibold text-gray-900 mb-2">{{ governorate.name_en }}</h3>
-              <p class="text-lg text-gray-600 mb-2">{{ governorate.name_ar }}</p>
-              <div class="flex items-center gap-4 text-sm text-gray-500">
-                <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full">{{ governorate.code }}</span>
-                <span v-if="governorate.latitude && governorate.longitude">
+              <h3 class="text-lg font-semibold text-gray-900 mb-1">{{ governorate.name_en }}</h3>
+              <p class="text-base text-gray-600 mb-2">{{ governorate.name_ar }}</p>
+              <div class="flex items-center gap-3 text-sm text-gray-500">
+                <span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-xs">{{ governorate.code }}</span>
+                <span v-if="governorate.latitude && governorate.longitude" class="text-xs">
                   📍 {{ governorate.latitude }}, {{ governorate.longitude }}
                 </span>
                 <span :class="governorate.is_active ? 'text-green-600' : 'text-red-600'">
@@ -84,23 +84,23 @@
                 <span class="text-gray-400">{{ governorate.wilayats?.length || 0 }} wilayats</span>
               </div>
             </div>
-            <div class="flex gap-2">
+            <div class="flex gap-1.5">
               <button 
                 @click="editGovernorate(governorate)"
-                class="p-2 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
                 title="Edit Governorate"
               >
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                 </svg>
               </button>
               <button 
                 @click="deleteGovernorate(governorate.id)"
-                class="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                class="p-1.5 text-red-600 hover:bg-red-50 rounded-md transition-colors"
                 title="Delete Governorate"
                 v-if="!governorate.wilayats || governorate.wilayats.length === 0"
               >
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                 </svg>
               </button>
@@ -109,18 +109,18 @@
         </div>
 
         <!-- Wilayats for this governorate -->
-        <div v-if="governorate.wilayats && governorate.wilayats.length > 0" class="p-6">
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div v-if="governorate.wilayats && governorate.wilayats.length > 0" class="p-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             <div 
               v-for="wilayat in governorate.wilayats" 
               :key="wilayat.id"
-              class="border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors"
+              class="border border-gray-200 rounded-lg p-3 hover:border-blue-300 transition-colors"
             >
               <div class="flex justify-between items-start mb-2">
                 <div class="flex-1">
-                  <h4 class="font-medium text-gray-900">{{ wilayat.name_en }}</h4>
-                  <p class="text-sm text-gray-600">{{ wilayat.name_ar }}</p>
-                  <span class="inline-block mt-1 bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded">
+                  <h4 class="font-medium text-gray-900 text-sm">{{ wilayat.name_en }}</h4>
+                  <p class="text-xs text-gray-600">{{ wilayat.name_ar }}</p>
+                  <span class="inline-block mt-1 bg-gray-100 text-gray-700 text-xs px-1.5 py-0.5 rounded">
                     {{ wilayat.code }}
                   </span>
                 </div>
@@ -130,7 +130,7 @@
                     class="p-1 text-blue-600 hover:bg-blue-50 rounded transition-colors"
                     title="Edit Wilayat"
                   >
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                     </svg>
                   </button>
@@ -139,7 +139,7 @@
                     class="p-1 text-red-600 hover:bg-red-50 rounded transition-colors"
                     title="Delete Wilayat"
                   >
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                     </svg>
                   </button>
@@ -465,7 +465,7 @@ const filteredGovernorates = computed(() => {
 const fetchData = async () => {
   try {
     loading.value = true
-    const response = await axios.get('/api/governorates', {
+    const response = await axios.get('/governorates', {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
       }
@@ -519,8 +519,8 @@ const saveGovernorate = async () => {
     submittingGovernorate.value = true
     
     const url = editingGovernorate.value 
-      ? `/api/governorates/${editingGovernorate.value.id}`
-      : '/api/governorates'
+      ? `/governorates/${editingGovernorate.value.id}`
+      : '/governorates'
     const method = editingGovernorate.value ? 'put' : 'post'
     
     const response = await axios[method](url, governorateForm, {
@@ -544,7 +544,7 @@ const deleteGovernorate = async (id) => {
   if (!confirm('Are you sure you want to delete this governorate?')) return
 
   try {
-    const response = await axios.delete(`/api/governorates/${id}`, {
+    const response = await axios.delete(`/governorates/${id}`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
       }
@@ -600,8 +600,8 @@ const saveWilayat = async () => {
     submittingWilayat.value = true
     
     const url = editingWilayat.value 
-      ? `/api/wilayats/${editingWilayat.value.id}`
-      : '/api/wilayats'
+      ? `/wilayats/${editingWilayat.value.id}`
+      : '/wilayats'
     const method = editingWilayat.value ? 'put' : 'post'
     
     const response = await axios[method](url, wilayatForm, {
@@ -625,7 +625,7 @@ const deleteWilayat = async (id) => {
   if (!confirm('Are you sure you want to delete this wilayat?')) return
 
   try {
-    const response = await axios.delete(`/api/wilayats/${id}`, {
+    const response = await axios.delete(`/wilayats/${id}`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
       }

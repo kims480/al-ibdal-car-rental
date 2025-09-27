@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Toast System Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 2rem;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .btn {
+            padding: 12px 24px;
+            margin: 8px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+        .btn-success { background: #10b981; color: white; }
+        .btn-error { background: #ef4444; color: white; }
+        .btn-warning { background: #f59e0b; color: white; }
+        .btn-info { background: #3b82f6; color: white; }
+        
+        /* Toast styles */
+        .toast-container {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            max-width: 420px;
+        }
+        .toast {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 1rem;
+            background: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1), 0 4px 10px rgba(0,0,0,0.05);
+            border-left: 4px solid;
+            min-width: 300px;
+            animation: slideIn 0.3s ease;
+        }
+        .toast.success { border-left-color: #10b981; }
+        .toast.error { border-left-color: #ef4444; }
+        .toast.warning { border-left-color: #f59e0b; }
+        .toast.info { border-left-color: #3b82f6; }
+        
+        .toast-content {
+            flex: 1;
+        }
+        .toast-title {
+            font-weight: 600;
+            color: #111827;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+        .toast-message {
+            color: #4b5563;
+            font-size: 14px;
+        }
+        .toast-close {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            color: #9ca3af;
+            padding: 0;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🍞 Toast Notification System Test</h1>
+        <p>Test the toast notification system with different types of messages:</p>
+        
+        <div style="margin: 2rem 0;">
+            <button class="btn btn-success" onclick="showToast('success', 'Success!', 'Operation completed successfully!')">
+                ✅ Success Toast
+            </button>
+            
+            <button class="btn btn-error" onclick="showToast('error', 'Error!', 'Something went wrong. Please try again.')">
+                ❌ Error Toast
+            </button>
+            
+            <button class="btn btn-warning" onclick="showToast('warning', 'Warning!', 'Please review your input before continuing.')">
+                ⚠️ Warning Toast
+            </button>
+            
+            <button class="btn btn-info" onclick="showToast('info', 'Info', 'Here is some helpful information for you.')">
+                ℹ️ Info Toast
+            </button>
+            
+            <button class="btn btn-info" onclick="showConfirm()">
+                ❓ Confirmation Toast
+            </button>
+            
+            <button class="btn btn-warning" onclick="clearAllToasts()">
+                🗑️ Clear All
+            </button>
+        </div>
+        
+        <h2>Toast System Features:</h2>
+        <ul>
+            <li>✅ <strong>Multiple Types:</strong> Success, Error, Warning, Info</li>
+            <li>✅ <strong>Material Design:</strong> Modern styling with gradients and shadows</li>
+            <li>✅ <strong>Auto-dismiss:</strong> Toasts automatically disappear after 5 seconds</li>
+            <li>✅ <strong>Manual Dismiss:</strong> Click the × to close immediately</li>
+            <li>✅ <strong>Confirmation Toasts:</strong> With action buttons</li>
+            <li>✅ <strong>Stacking:</strong> Multiple toasts stack properly</li>
+            <li>✅ <strong>Responsive:</strong> Works on mobile and desktop</li>
+            <li>✅ <strong>Accessible:</strong> Proper ARIA labels and keyboard support</li>
+        </ul>
+        
+        <h2>Implementation Status:</h2>
+        <div style="margin: 1rem 0;">
+            <div>✅ <strong>Users.vue:</strong> 10 alerts replaced with toasts</div>
+            <div>✅ <strong>UserBranchAssignment.vue:</strong> 8 alerts replaced with toasts</div>
+            <div>✅ <strong>ServiceRequestWorkflow.vue:</strong> 3 alerts replaced with toasts</div>
+            <div>✅ <strong>ServiceRequests.vue:</strong> 2 alerts replaced with toasts</div>
+            <div style="color: #f59e0b;">🔄 <strong>Remaining:</strong> ~39 alerts across 6+ other files</div>
+        </div>
+    </div>
+    
+    <div id="toast-container" class="toast-container"></div>
+    
+    <script>
+        let toastId = 0;
+        
+        function showToast(type, title, message, duration = 5000) {
+            const id = ++toastId;
+            const container = document.getElementById('toast-container');
+            
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <div class="toast-content">
+                    <div class="toast-title">${title}</div>
+                    <div class="toast-message">${message}</div>
+                </div>
+                <button class="toast-close" onclick="removeToast(${id})" aria-label="Close">&times;</button>
+            `;
+            toast.id = `toast-${id}`;
+            
+            container.appendChild(toast);
+            
+            if (duration > 0) {
+                setTimeout(() => removeToast(id), duration);
+            }
+        }
+        
+        function showConfirm() {
+            const id = ++toastId;
+            const container = document.getElementById('toast-container');
+            
+            const toast = document.createElement('div');
+            toast.className = 'toast warning';
+            toast.innerHTML = `
+                <div class="toast-content">
+                    <div class="toast-title">Confirm Action</div>
+                    <div class="toast-message">Are you sure you want to proceed?</div>
+                    <div style="margin-top: 12px;">
+                        <button style="padding: 6px 12px; margin-right: 8px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer;" 
+                                onclick="confirmAction(${id})">Confirm</button>
+                        <button style="padding: 6px 12px; background: #6b7280; color: white; border: none; border-radius: 4px; cursor: pointer;" 
+                                onclick="removeToast(${id})">Cancel</button>
+                    </div>
+                </div>
+            `;
+            toast.id = `toast-${id}`;
+            
+            container.appendChild(toast);
+        }
+        
+        function confirmAction(id) {
+            removeToast(id);
+            showToast('success', 'Confirmed!', 'Action has been executed successfully.');
+        }
+        
+        function removeToast(id) {
+            const toast = document.getElementById(`toast-${id}`);
+            if (toast) {
+                toast.style.animation = 'slideIn 0.3s ease reverse';
+                setTimeout(() => toast.remove(), 300);
+            }
+        }
+        
+        function clearAllToasts() {
+            const container = document.getElementById('toast-container');
+            container.innerHTML = '';
+        }
+        
+        // Auto-show welcome message
+        setTimeout(() => {
+            showToast('info', 'Welcome! 👋', 'Toast notification system is working perfectly!');
+        }, 500);
+    </script>
+</body>
+</html>
